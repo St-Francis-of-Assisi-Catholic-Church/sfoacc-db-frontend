@@ -1,10 +1,10 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+// import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import { Dashboard } from "./pages/Dashboard";
-import { Landing } from "./pages/Landing";
+// import { Landing } from "./pages/Landing";
 import { Login } from "./pages/Login";
-import { NotFound } from "./pages/NotFound";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -12,16 +12,18 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<Landing />} />
+            {/* <Route path="/" element={<Landing />} /> */}
+            <Route path="/" element={<Login />} />
             <Route path="/auth/login" element={<Login />} />
-            <Route
+            <Route path="/dashboard" element={<Dashboard />} />
+            {/* <Route
               path="/dashboard"
               element={
                 <ProtectedRoute>
                   <Dashboard />
                 </ProtectedRoute>
               }
-            />
+            /> */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
