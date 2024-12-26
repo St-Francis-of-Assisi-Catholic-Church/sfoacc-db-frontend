@@ -22,7 +22,7 @@ export default function LoginForm() {
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>("error here");
+  const [error, setError] = useState<string | null>("");
   const [rememberMe, setRememberMe] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
