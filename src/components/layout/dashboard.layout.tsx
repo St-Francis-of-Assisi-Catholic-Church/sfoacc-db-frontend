@@ -43,7 +43,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           )}
         >
           <Header />
-          <div className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 pt-4 px-4 pb-12">
+          <div className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 pt-4 px-4 pb-2">
             {children}
           </div>
           <Footer />

@@ -105,3 +105,32 @@ body {
     @apply h-[38px] md:h-[35px] flex w-full rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
   }
 }
+
+/* kpi data table */
+.ag-theme-custom-data-table {
+  --ag-header-column-separator-display: block !important;
+  --ag-header-column-separator-height: 100% !important;
+  --ag-header-column-separator-width: 2px !important;
+  --ag-header-column-separator-color: rgb(75, 183, 214) !important;
+
+  --ag-border-radius: 4px !important;
+  --ag-wrapper-border-radius: 4px !important;
+}
+
+.ag-theme-custom-data-table .ag-header-row {
+  background-color: #193946 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+
+  /* here */
+  align-items: center !important;
+  text-align: center !important;
+}
+
+.ag-theme-custom-data-table .ag-header-cell {
+  display: inline-flex;
+  align-items: center;
+  position: absolute;
+  /* height: 100%; */
+  text-align: center !important;
+}
