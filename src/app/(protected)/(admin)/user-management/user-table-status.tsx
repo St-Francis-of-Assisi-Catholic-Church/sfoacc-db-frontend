@@ -293,7 +293,7 @@ const UserTable = () => {
             rowData={rowData}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
-            // pagination={true}
+            pagination={isMobile && true}
             animateRows={true}
             enableCellTextSelection={true}
             suppressCellFocus={true}
