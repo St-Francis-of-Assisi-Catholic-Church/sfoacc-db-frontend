@@ -79,9 +79,9 @@ export const sideBarNavs: SideBarNavItem[] = [
     title: "Admin",
   },
   {
-    title: "System Users",
+    title: "User Management",
     icon: UserCog,
-    href: "/users",
+    href: "/user-management",
   },
   {
     title: "System Settings",
