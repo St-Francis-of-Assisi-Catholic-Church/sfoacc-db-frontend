@@ -37,6 +37,7 @@ import { RefreshCw, Search } from "lucide-react";
 import { toast } from "sonner";
 import { ErrorAlert } from "@/components/ui/errorAlert";
 import AddUserModal from "./add-user-modal";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 interface User {
   id: number;
@@ -149,6 +150,8 @@ const UserTable = () => {
   const [rowData, setRowData] = useState<User[] | null>(null);
   const [searchText, setSearchText] = useState("");
 
+  const isMobile = useMediaQuery("(min-width: 768px)");
+
   const fetchData = useCallback(async ({ refresh = false } = {}) => {
     setIsLoading(true);
     setError(null);
@@ -186,24 +189,32 @@ const UserTable = () => {
 
   const columnDefs = useMemo<ColDef[]>(
     () => [
-      { field: "id", headerName: "ID", maxWidth: 70 },
-      { field: "fullname", headerName: "Full Name", filter: true },
-      { field: "email", filter: true },
-      { field: "role", filter: true },
+      { field: "id", headerName: "ID", maxWidth: 70, minWidth: 60 },
+      {
+        field: "fullname",
+        headerName: "Full Name",
+        filter: true,
+        minWidth: 180,
+      },
+      { field: "email", minWidth: 240, filter: true },
+      { field: "role", minWidth: 180, filter: true },
       {
         field: "status",
+        minWidth: 120,
         filter: true,
         cellRenderer: StatusCellRenderer,
       },
       {
         field: "dateCreated",
         headerName: "Created At",
+        minWidth: 240,
         filter: true,
         valueFormatter: (params) => new Date(params.value).toLocaleString(),
       },
       {
         field: "lastUpdated",
         headerName: "Last Updated",
+        minWidth: 240,
         filter: true,
         valueFormatter: (params) => new Date(params.value).toLocaleString(),
       },
@@ -242,9 +253,9 @@ const UserTable = () => {
   return (
     <div className="h-full w-full space-y-2 flex flex-col">
       <div className="w-full flex justify-between items-center">
-        <div className="relative w-72">
+        <div className={cn("relative w-28 md:w-72")}>
           <Input
-            className="h-8 pl-7 py-1"
+            className={cn("h-8 pl-7 py-1")}
             type="search"
             placeholder="Search..."
             value={searchText}
@@ -261,7 +272,7 @@ const UserTable = () => {
             className="flex items-center gap-2 h-8"
           >
             <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
-            Refresh
+            {isMobile && "Refresh"}
           </Button>
 
           <AddUserModal onUserAdded={handleUserAdded} />
@@ -282,7 +293,7 @@ const UserTable = () => {
             rowData={rowData}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
-            pagination={true}
+            // pagination={true}
             animateRows={true}
             enableCellTextSelection={true}
             suppressCellFocus={true}
