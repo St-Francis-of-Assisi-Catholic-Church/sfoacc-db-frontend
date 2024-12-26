@@ -8,13 +8,16 @@ import React from "react";
 export default function Footer() {
   const isMobile = useMediaQuery("(min-width: 768px)");
 
-  if (isMobile) return null;
+  // if (isMobile) return null;
   // only show this if is mobile screen
   return (
     <div
       className={cn(
-        " fixed bottom-0 w-full bg-[#161d26] h-10 flex justify-between items-center px-2",
-        "relative"
+        " fixed bottom-0 w-full  h-10 flex justify-between items-center px-2",
+        "relative",
+        isMobile
+          ? "bg-gray-100 border text-muted-foreground"
+          : "bg-[#161d26] text-secondary"
       )}
     >
       {/* <Button
@@ -24,8 +27,8 @@ export default function Footer() {
       >
         <Image src={Logo} className="h-[40px] w-[40px]" alt="logo" priority />
       </Button> */}
-      <p className="text-secondary text-xs font-medium text-center w-full">
-        © SFOACC 2024
+      <p className=" text-xs font-medium text-center w-full">
+        © SFOACC{isMobile && " Church DB System -"} 2024{" "}
       </p>
     </div>
   );
