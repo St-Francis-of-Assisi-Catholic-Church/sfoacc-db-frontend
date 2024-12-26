@@ -1,4 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster as SonnerToaster } from "sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -23,6 +24,12 @@ export default function RootLayout({
         spellCheck
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <SonnerToaster
+          expand={false}
+          position="top-right"
+          richColors
+          closeButton
+        />
         {children}
       </body>
     </html>

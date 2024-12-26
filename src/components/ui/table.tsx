@@ -2,18 +2,14 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-interface TableProps extends React.HTMLAttributes<HTMLTableElement> {
-  wrapperClass?: string
-}
 const Table = React.forwardRef<
   HTMLTableElement,
-  TableProps
-
->(({ className, wrapperClass, ...props }, ref) => (
-  <div className={cn("overflow-x-auto", wrapperClass)}>
+  React.HTMLAttributes<HTMLTableElement>
+>(({ className, ...props }, ref) => (
+  <div className="relative w-full overflow-auto">
     <table
       ref={ref}
-      className={cn("w-full caption-top text-sm ", className)}
+      className={cn("w-full caption-bottom text-sm", className)}
       {...props}
     />
   </div>
@@ -46,7 +42,10 @@ const TableFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <tfoot
     ref={ref}
-    className={cn(" bg-muted font-medium", className)}
+    className={cn(
+      "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
+      className
+    )}
     {...props}
   />
 ));
@@ -59,7 +58,7 @@ const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b border-default-300 transition-colors  data-[state=selected]:bg-muted",
+      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
       className
     )}
     {...props}
@@ -74,7 +73,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-14 px-4  ltr:text-left rtl:text-right ltr:last:text-right rtl:last:text-left align-middle font-semibold  text-sm  text-default-800    capitalize  ltr:[&:has([role=checkbox])]:pr-0 rtl:[&:has([role=checkbox])]:pl-0",
+      "h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
       className
     )}
     {...props}
@@ -89,7 +88,7 @@ const TableCell = React.forwardRef<
   <td
     ref={ref}
     className={cn(
-      "p-4 align-middle  text-sm text-default-600 last:text-right rtl:last:text-left font-normal  ltr:[&:has([role=checkbox])]:pr-0 rtl:[&:has([role=checkbox])]:pl-0",
+      "p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
       className
     )}
     {...props}
@@ -103,10 +102,7 @@ const TableCaption = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <caption
     ref={ref}
-    className={cn(
-      "mb-4 text-sm font-medium text-default-700 text-start",
-      className
-    )}
+    className={cn("mt-4 text-sm text-muted-foreground", className)}
     {...props}
   />
 ));
