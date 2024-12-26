@@ -13,7 +13,7 @@ export default function Footer() {
   return (
     <div
       className={cn(
-        " fixed bottom-0 w-full  h-10 flex justify-between items-center px-2",
+        " fixed bottom-0 w-full  h-[30px] flex justify-between items-center px-2",
         "relative",
         isMobile
           ? "bg-gray-100 border text-muted-foreground"
