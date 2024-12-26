@@ -1,7 +1,7 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
-import { cn } from "../../utils/cn";
-import { ArrowRightIcon } from "@heroicons/react/24/solid";
+import { cn } from "@/lib/utils";
+import { MoveRight } from "lucide-react";
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring  disabled:opacity-50 disabled:cursor-not-allowed group active:scale-[97%] transition-all duration-200 ",
@@ -49,11 +49,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       size,
       isLoading = false,
       showRightArrow = false,
-      asChild = false,
+      //   asChild = false,
       ...props
     },
     ref
   ) => {
+    //  const Comp = asChild ? Slot : "button";
     return (
       <button
         className={cn(buttonVariants({ variant, size, className }))}
@@ -75,7 +76,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
         {!isLoading && props.children}
         {showRightArrow && (
-          <ArrowRightIcon className="ml-2 h-4 hidden group-hover:flex" />
+          <MoveRight className="ml-2 h-4 hidden group-hover:flex" />
         )}
       </button>
     );
