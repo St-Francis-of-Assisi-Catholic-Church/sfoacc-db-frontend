@@ -13,8 +13,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import handleSignOut from "@/lib/actions/auth/handleSignOut";
+import { useSession } from "next-auth/react";
 
 export default function Header() {
+  const { data: session } = useSession();
   const { collapsed, setCollapsed } = useSidebar();
   //   const isDesktop = useMediaQuery("(min-width: 1280px)");
 
@@ -50,10 +53,10 @@ export default function Header() {
             <DropdownMenuLabel>
               <div>
                 <div className="text-sm font-medium text-default-800 capitalize ">
-                  jon Doe
+                  {session?.user.full_name}
                 </div>
                 <div className="text-xs text-default-600 hover:text-primary">
-                  jondoe@gmail.com
+                  {session?.user.email}
                 </div>
               </div>
             </DropdownMenuLabel>
@@ -65,7 +68,8 @@ export default function Header() {
             <DropdownMenuSeparator className="mb-0 dark:bg-background" />
             <DropdownMenuItem
               //   onSelect={() => signOut()}
-              className=""
+              onSelect={() => handleSignOut()}
+              className="cursor-pointer"
             >
               <Power className="w-4 h-4" />
               Log out

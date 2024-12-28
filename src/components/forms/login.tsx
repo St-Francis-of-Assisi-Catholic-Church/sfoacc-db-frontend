@@ -1,24 +1,26 @@
-// LoginForm.tsx
 "use client";
-
 import Link from "next/link";
 import React, { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
-import { ApiSimulator } from "@/lib/utils";
 import { ErrorAlert } from "../ui/errorAlert";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { handleSignInWithEmail } from "@/lib/actions/auth/handleSignin";
+import { toast } from "sonner";
 
 interface LoginFormData {
-  username: string;
+  email: string; // Changed from username to email to match the server action
   password: string;
 }
 
 export default function LoginForm() {
-  const router = useRouter();
+  // const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
+
   const [formData, setFormData] = useState<LoginFormData>({
-    username: "",
+    email: "", // Changed from username to email
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -36,21 +38,32 @@ export default function LoginForm() {
     setError(null);
 
     try {
-      const data = await ApiSimulator(true, 2000);
-      console.log("data", formData, data);
-      router.push("/dashboard");
-    } catch (error) {
-      console.log("er", error);
-      setError(
-        "Failed to sign in. Please check your credentials and try again."
+      const response = await handleSignInWithEmail(
+        {
+          email: formData.email,
+          password: formData.password,
+        },
+        callbackUrl
       );
+
+      if (response?.error) {
+        setError(response.error);
+        toast.error(response.error);
+        return;
+      }
+
+      // No need to manually redirect as NextAuth will handle the redirect
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("An unexpected error occurred. Please try again.");
+      toast.error(`An unexpected error occurred. Please try again. ${error}`);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 ">
       <div className="my-2 hidden xl:block">
         <h1 className="font-semibold">Welcome back,</h1>
         <p>Please sign in below to continue</p>
@@ -58,15 +71,15 @@ export default function LoginForm() {
       {error && <ErrorAlert message={error} onClose={() => setError(null)} />}
 
       <div>
-        <label htmlFor="username" className="font-medium text-default-600">
+        <label htmlFor="email" className="font-medium text-default-600">
           Email
         </label>
         <Input
-          id="username"
-          name="username"
+          id="email"
+          name="email"
           className="mt-2"
           type="email"
-          value={formData.username}
+          value={formData.email}
           onChange={handleInputChange}
           required
           aria-label="Email address"

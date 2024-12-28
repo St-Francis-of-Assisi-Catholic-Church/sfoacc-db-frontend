@@ -1,6 +1,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster as SonnerToaster } from "sonner";
 import "./globals.css";
+import { SessionProvider } from "next-auth/react";
+import { auth } from "@/auth";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,11 +14,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -24,13 +27,15 @@ export default function RootLayout({
         spellCheck
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SonnerToaster
-          expand={false}
-          position="top-right"
-          richColors
-          closeButton
-        />
-        {children}
+        <SessionProvider session={session}>
+          <SonnerToaster
+            expand={false}
+            position="top-right"
+            richColors
+            closeButton
+          />
+          {children}
+        </SessionProvider>
       </body>
     </html>
   );
