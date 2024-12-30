@@ -20,8 +20,10 @@ export default {
           const email: string = credentials.email as string;
           const password: string = credentials.password as string;
 
+          console.log("hhh", process.env.API_URL);
+
           const response = await fetch(
-            "http://13.60.62.124:8000/api/v1/auth/login",
+            `http://13.60.62.124:8000/api/v1/auth/login`,
             {
               method: "POST",
               headers: {
@@ -39,17 +41,29 @@ export default {
           );
 
           console.log("----------heheheh------------------------");
-          // Log the full response details for debugging
-          console.log({
-            status: response.status,
-            statusText: response.statusText,
-            headers: Object.fromEntries(response.headers.entries()),
-          });
+          // console.log("Responseeee", response);
 
-          // Get the response text first
-          const responseText = await response.text();
-          console.log("Responseeee", response);
-          console.log("Response text:", responseText);
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || "Authentication failed");
+          }
+
+          const data = await response.json();
+          // console.log("data", data);
+
+          // Extract user data and access token from the response
+          const { user, access_token } = data;
+
+          // Return the user object in the format expected by NextAuth
+          return {
+            id: user.id.toString(),
+            email: user.email,
+            name: user.full_name,
+            full_name: user.full_name,
+            role: user.role,
+            is_active: user.is_active,
+            accessToken: access_token,
+          };
 
           // Example authentication logic
           // In production, replace this with actual database lookup

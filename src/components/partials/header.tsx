@@ -1,7 +1,7 @@
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { ChevronRight, Menu, Power, UserRound } from "lucide-react";
 import React from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { useSidebar } from "@/store";
 import MobileSidebar from "./sidebar/mobileSidebar";
@@ -15,6 +15,8 @@ import {
 } from "../ui/dropdown-menu";
 import handleSignOut from "@/lib/actions/auth/handleSignOut";
 import { useSession } from "next-auth/react";
+import { getInitials } from "@/lib/utils";
+import Link from "next/link";
 
 export default function Header() {
   const { data: session } = useSession();
@@ -22,6 +24,7 @@ export default function Header() {
   //   const isDesktop = useMediaQuery("(min-width: 1280px)");
 
   const isMobile = useMediaQuery("(min-width: 768px)");
+  const userInitials = getInitials(session?.user.full_name);
 
   return (
     <div className="border w-full h-[50px]">
@@ -43,10 +46,10 @@ export default function Header() {
 
         <DropdownMenu>
           <DropdownMenuTrigger>
-            {" "}
-            <Avatar className="h-8 w-8">
-              <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-              <AvatarFallback>CN</AvatarFallback>
+            <Avatar className="h-8 w-8 ">
+              <AvatarFallback className="bg-darkblue border text-white text-xs font-semiBold">
+                {userInitials}
+              </AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent className=" w-52" align="end">
@@ -61,13 +64,17 @@ export default function Header() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <UserRound className="w-4 h-4" />
-              Profile
+            <DropdownMenuItem asChild>
+              <Link
+                href={"/profile"}
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <UserRound className="w-4 h-4" />
+                Profile
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator className="mb-0 dark:bg-background" />
             <DropdownMenuItem
-              //   onSelect={() => signOut()}
               onSelect={() => handleSignOut()}
               className="cursor-pointer"
             >

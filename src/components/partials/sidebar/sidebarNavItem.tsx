@@ -34,7 +34,7 @@ export function SidebarNavItem({ item }: { item: SideBarNavItem }) {
         <button
           onClick={() => setIsOpen(!isOpen)}
           className={cn(
-            "flex items-center justify-between w-full px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors",
+            "flex items-center justify-between w-full px-3 py-2 hover:bg-gray-100 rounded-md transition-colors",
             pathname.startsWith(item.href!) && "bg-gray-100"
           )}
         >
@@ -84,15 +84,15 @@ export function SidebarNavItem({ item }: { item: SideBarNavItem }) {
       <Link
         href={item.href!}
         className={cn(
-          "flex items-center px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors",
-          pathname === item.href && "bg-gray-100"
+          "flex items-center px-3 py-2 hover:bg-darkblue/20 rounded-md transition-colors",
+          pathname === item.href && "bg-darkblue text-white hover:bg-darkblue"
         )}
       >
         {item.icon && (
           <item.icon
             className={cn(
               "h-5 w-5 mr-2 text-gray-500",
-              pathname === item.href && "text-gray-800"
+              pathname === item.href && "text-white"
             )}
           />
         )}
@@ -131,7 +131,7 @@ function ChildNavItem({ item }: { item: NavChild }) {
     <Link
       href={item.href}
       className={cn(
-        "flex items-center px-3 py-2 text-sm hover:bg-gray-100 rounded-lg transition-colors",
+        "flex items-center px-3 py-2 text-sm hover:bg-gray-100 rounded-md transition-colors",
         pathname === item.href && "bg-gray-100"
       )}
     >

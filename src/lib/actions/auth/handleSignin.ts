@@ -1,6 +1,7 @@
 "use server";
+
 import { signIn } from "@/auth";
-import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
+// import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import { AuthError } from "next-auth";
 
 interface ISignInData {
@@ -12,28 +13,52 @@ const handleSignInWithEmail = async (
   data: ISignInData,
   callbackUrl?: string | null
 ) => {
-  // TODO validate data
-
+  console.log("cl", callbackUrl);
   try {
-    await signIn("credentials", {
+    const result = await signIn("credentials", {
       email: data.email,
       password: data.password,
-      redirectTo: callbackUrl || DEFAULT_LOGIN_REDIRECT,
+      redirect: false,
     });
+
+    if (result?.error) {
+      return {
+        error: "Invalid credentials",
+        success: false,
+      };
+    }
+
+    // Return success without redirect URL - we'll handle it client-side
+    return {
+      success: true,
+    };
   } catch (error) {
-    console.log("authActions====>:", error);
+    console.error("Authentication error:", error);
+
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CallbackRouteError":
-          return { error: error.cause?.err?.message };
+          return {
+            error: error.cause?.err?.message || "Callback route error",
+            success: false,
+          };
         case "CredentialsSignin":
-          console.log("server error", error);
-          return { error: `Invalid credentials! ==${error}` };
+          return {
+            error: "Invalid credentials",
+            success: false,
+          };
         default:
-          return { error: "Something went wrong!" };
+          return {
+            error: "Something went wrong!",
+            success: false,
+          };
       }
     }
-    throw error;
+
+    return {
+      error: "An unexpected error occurred",
+      success: false,
+    };
   }
 };
 
