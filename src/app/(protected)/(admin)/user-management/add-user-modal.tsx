@@ -28,29 +28,19 @@ import { useForm } from "react-hook-form";
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { ErrorAlert } from "@/components/ui/errorAlert";
+import { useSession } from "next-auth/react";
+import { UserRole } from "@/types";
 
 interface AddUserModalProps {
-  onUserAdded: (newUser: User) => void;
-}
-
-type UserRole = "super admin" | "admin" | "user" | "audit";
-type UserStatus = "active" | "disabled";
-
-interface User {
-  id: number;
-  fullname: string;
-  email: string;
-  role: UserRole;
-  status: UserStatus;
-  dateCreated: string;
-  lastUpdated: string;
+  onUserAdded: () => void;
 }
 
 interface UserFormData {
-  fullname: string;
   email: string;
+  full_name: string;
   role: UserRole;
-  status: UserStatus;
+  is_active: boolean;
+  password: string;
 }
 
 export default function AddUserModal({ onUserAdded }: AddUserModalProps) {
@@ -58,12 +48,15 @@ export default function AddUserModal({ onUserAdded }: AddUserModalProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const { data: session } = useSession();
+
   const form = useForm<UserFormData>({
     defaultValues: {
-      fullname: "",
+      full_name: "",
       email: "",
       role: "user",
-      status: "active",
+      is_active: true,
+      password: "password",
     },
   });
 
@@ -72,7 +65,6 @@ export default function AddUserModal({ onUserAdded }: AddUserModalProps) {
       setIsSubmitting(true);
       setError(null);
 
-      // Validate form data
       const validationErrors = form.formState.errors;
       if (Object.keys(validationErrors).length > 0) {
         const firstError = Object.values(validationErrors)[0];
@@ -80,25 +72,34 @@ export default function AddUserModal({ onUserAdded }: AddUserModalProps) {
         return;
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch(`/api/v1/user-management/users`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.accessToken}`,
+          Accept: "application/json",
+        },
+        body: JSON.stringify(data),
+      });
 
-      const newUser: User = {
-        id: Math.floor(Math.random() * 1000),
-        ...data,
-        dateCreated: new Date().toISOString(),
-        lastUpdated: new Date().toISOString(),
-      };
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to add user");
+      }
 
-      onUserAdded(newUser);
+      console.log("response", response);
+
+      // const newUser = await response.json();
+      onUserAdded();
       setOpen(false);
       form.reset();
       toast.success("User added successfully");
     } catch (err) {
+      console.log("error", err);
       const error = err as Error;
-      const errorMessage =
-        "message" in error ? error.message : "Failed to add user";
+      const errorMessage = error.message || "Failed to add user";
       setError(errorMessage);
-      toast.error("Failed to add user");
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -111,18 +112,20 @@ export default function AddUserModal({ onUserAdded }: AddUserModalProps) {
           Add User
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-[22rem] md:max-w-lg p-4 rounded-md">
         <DialogHeader>
-          <DialogTitle>Add User</DialogTitle>
+          <DialogTitle className="text-left">Add User</DialogTitle>
         </DialogHeader>
 
-        {error && <ErrorAlert message={error} onClose={() => setError(null)} />}
-
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 ">
+            {error && (
+              <ErrorAlert message={error} onClose={() => setError(null)} />
+            )}
+
             <FormField
               control={form.control}
-              name="fullname"
+              name="full_name"
               rules={{ required: "Full name is required" }}
               render={({ field }) => (
                 <FormItem>
@@ -175,8 +178,7 @@ export default function AddUserModal({ onUserAdded }: AddUserModalProps) {
                     <SelectContent>
                       <SelectItem value="user">User</SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="super admin">Super Admin</SelectItem>
-                      <SelectItem value="audit">Audit</SelectItem>
+                      <SelectItem value="super_admin">Super Admin</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -186,26 +188,18 @@ export default function AddUserModal({ onUserAdded }: AddUserModalProps) {
 
             <FormField
               control={form.control}
-              name="status"
-              rules={{ required: "Status is required" }}
+              name="is_active"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="disabled">Disabled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
+                <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                  <FormControl>
+                    <input
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={field.onChange}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                  </FormControl>
+                  <FormLabel className="font-normal">Active User</FormLabel>
                 </FormItem>
               )}
             />
