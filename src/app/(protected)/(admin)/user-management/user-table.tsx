@@ -22,15 +22,10 @@ import {
   DateFilterModule,
   NumberFilterModule,
   TextFilterModule,
+  RenderApiModule,
 } from "ag-grid-community";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { RefreshCw, Search } from "lucide-react";
@@ -39,12 +34,14 @@ import { ErrorAlert } from "@/components/ui/errorAlert";
 import AddUserModal from "./add-user-modal";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useSession } from "next-auth/react";
+import { UserRole } from "@/types";
+import ViewUserModal from "./view-user-modal";
 
 interface User {
   id: number;
   full_name: string;
   email: string;
-  role: string;
+  role: UserRole;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -53,50 +50,6 @@ interface User {
 interface StatusCellRendererParams {
   value: boolean;
 }
-
-const ActionCellRenderer = (props: CustomCellRendererProps<User>) => {
-  const user = props.data;
-  if (!user) return null;
-
-  return (
-    <div className="flex gap-2">
-      <Dialog>
-        <DialogTrigger asChild className="w-full">
-          <Button variant="outline" size="sm" className="mt-1">
-            View
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>User Details</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div>
-              <strong>Name:</strong> {user.full_name}
-            </div>
-            <div>
-              <strong>Email:</strong> {user.email}
-            </div>
-            <div>
-              <strong>Role:</strong> {user.role}
-            </div>
-            <div>
-              <strong>Status:</strong> {user.is_active ? "Active" : "Inactive"}
-            </div>
-            <div>
-              <strong>Created:</strong>{" "}
-              {new Date(user.created_at).toLocaleString()}
-            </div>
-            <div>
-              <strong>Last Updated:</strong>{" "}
-              {new Date(user.updated_at).toLocaleString()}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-};
 
 const StatusCellRenderer = ({ value }: StatusCellRendererParams) => (
   <span
@@ -180,10 +133,11 @@ const UserTable = () => {
     minWidth: 80,
     sortable: false,
     filter: false,
-    cellRenderer: ActionCellRenderer,
+    cellRenderer: (props: CustomCellRendererProps) => (
+      <ViewUserModal {...props} onRefreshData={refreshData} />
+    ),
     cellDataType: false,
   };
-
   const columnDefs = useMemo<ColDef[]>(
     () => [
       { field: "id", headerName: "ID", maxWidth: 70, minWidth: 60 },
@@ -239,14 +193,6 @@ const UserTable = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  // const handleUserAdded = useCallback(
-  //   (newUser: User) => {
-  //     setRowData((prevData) => (prevData ? [...prevData, newUser] : [newUser]));
-  //     fetchData({ refresh: true }); // Refresh data after adding new user
-  //   },
-  //   [fetchData]
-  // );
 
   const refreshData = useCallback(async () => {
     await fetchData({ refresh: true });
@@ -316,6 +262,7 @@ const UserTable = () => {
               NumberFilterModule,
               DateFilterModule,
               CustomFilterModule,
+              RenderApiModule,
             ]}
           />
         </div>
