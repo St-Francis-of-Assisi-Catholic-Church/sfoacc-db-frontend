@@ -26,6 +26,7 @@ export const {
         session.user.role = token.role as string;
         session.user.full_name = token.full_name as string;
         session.user.is_active = token.is_active as boolean;
+        session.user.status = token.status as string;
       }
       return session;
     },
@@ -36,6 +37,7 @@ export const {
         token.role = user.role;
         token.full_name = user.full_name;
         token.is_active = user.is_active;
+        token.status = user.status;
       }
       return token;
     },
@@ -45,16 +47,16 @@ export const {
   secret: process.env.NEXTAUTH_SECRET,
   trustHost: true,
   //   debug: process.env.NODE_ENV === "development",
-  debug: false,
-  cookies: {
-    pkceCodeVerifier: {
-      name: "next-auth.pkce.code_verifier",
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-      },
-    },
-  },
+  debug: true,
+  // cookies: {
+  //   pkceCodeVerifier: {
+  //     name: "next-auth.pkce.code_verifier",
+  //     options: {
+  //       httpOnly: true,
+  //       sameSite: "lax",
+  //       path: "/",
+  //       secure: process.env.NODE_ENV === "production",
+  //     },
+  //   },
+  // },
 });

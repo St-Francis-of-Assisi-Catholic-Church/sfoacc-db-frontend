@@ -49,7 +49,7 @@ export default {
           }
 
           const data = await response.json();
-          // console.log("data", data);
+          console.log("data", data);
 
           // Extract user data and access token from the response
           const { user, access_token } = data;
@@ -63,6 +63,7 @@ export default {
             role: user.role,
             is_active: user.is_active,
             accessToken: access_token,
+            status: user.status,
           };
 
           // Example authentication logic

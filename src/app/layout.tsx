@@ -27,7 +27,7 @@ export default async function RootLayout({
         spellCheck
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SessionProvider session={session}>
+        <SessionProvider session={session} refetchOnWindowFocus={true}>
           <SonnerToaster
             expand={false}
             position="top-right"
