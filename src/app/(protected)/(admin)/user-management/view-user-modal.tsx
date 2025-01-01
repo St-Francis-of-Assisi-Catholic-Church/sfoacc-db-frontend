@@ -19,10 +19,10 @@ import {
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { CustomCellRendererProps } from "ag-grid-react";
 import { Trash2 } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { ErrorAlert } from "@/components/ui/errorAlert";
+import { UserStatus } from "@/types";
 
 interface ViewUserModalProps extends CustomCellRendererProps {
   onRefreshData?: () => void;
@@ -39,7 +39,7 @@ export default function ViewUserModal(props: ViewUserModalProps) {
   const [formData, setFormData] = useState({
     full_name: user.full_name,
     role: user.role,
-    is_active: user.is_active,
+    status: user.status,
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -57,12 +57,20 @@ export default function ViewUserModal(props: ViewUserModalProps) {
         body: JSON.stringify(formData),
       });
 
+      console.log("response", response);
+      const data = await response.json();
+      if (!response.ok) {
+        // get proper error message from api
+        const errorMessage =
+          data.message || data.detail || "Failed to update user";
+        throw new Error(errorMessage);
+      }
+
       if (!response.ok) throw new Error("Update failed");
 
       toast.success("User updated successfully");
 
       onRefreshData?.();
-      // Refresh the grid or update local state
       if (props.api) {
         props.api.refreshCells({ rowNodes: [props.node] });
       }
@@ -89,9 +97,14 @@ export default function ViewUserModal(props: ViewUserModalProps) {
         },
       });
 
-      if (!response.ok) throw new Error("Delete failed");
-
       console.log("response", response);
+      const data = await response.json();
+      if (!response.ok) {
+        // get proper error message from api
+        const errorMessage =
+          data.message || data.detail || "Failed to delete user";
+        throw new Error(errorMessage);
+      }
 
       toast.success("User deleted successfully");
       onRefreshData?.();
@@ -103,6 +116,24 @@ export default function ViewUserModal(props: ViewUserModalProps) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const getStatusBadgeStyles = (status: UserStatus) => {
+    const styles = {
+      active: "bg-green-100 text-green-800",
+      disabled: "bg-red-100 text-red-800",
+      reset_required: "bg-yellow-100 text-yellow-800",
+    };
+    return `inline-block px-2 py-1 rounded text-sm ${styles[status]}`;
+  };
+
+  const getStatusLabel = (status: UserStatus) => {
+    const labels = {
+      active: "Active",
+      disabled: "Disabled",
+      reset_required: "Reset Required",
+    };
+    return labels[status];
   };
 
   return (
@@ -117,12 +148,15 @@ export default function ViewUserModal(props: ViewUserModalProps) {
           <DialogHeader>
             <DialogTitle className="text-left">User Details</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-3 py-4">
             {error && (
               <ErrorAlert message={error} onClose={() => setError(null)} />
             )}
             <div>
               <strong>systemID:</strong> {user.id}
+            </div>
+            <div>
+              <strong>Email:</strong> {user.email}
             </div>
             <div className="space-y-2">
               {isEditing ? (
@@ -144,9 +178,7 @@ export default function ViewUserModal(props: ViewUserModalProps) {
                 </div>
               )}
             </div>
-            <div>
-              <strong>Email:</strong> {user.email}
-            </div>
+
             <div className="space-y-2">
               {isEditing ? (
                 <>
@@ -177,20 +209,30 @@ export default function ViewUserModal(props: ViewUserModalProps) {
               {isEditing ? (
                 <>
                   <Label>Status</Label>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      checked={formData.is_active}
-                      onCheckedChange={(checked) =>
-                        setFormData((prev) => ({ ...prev, is_active: checked }))
-                      }
-                    />
-                    <span>{formData.is_active ? "Active" : "Inactive"}</span>
-                  </div>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value: UserStatus) =>
+                      setFormData((prev) => ({ ...prev, status: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="disabled">Disabled</SelectItem>
+                      <SelectItem value="reset_required">
+                        Reset Required
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </>
               ) : (
                 <div>
                   <strong>Status:</strong>{" "}
-                  {user.is_active ? "Active" : "Inactive"}
+                  <span className={getStatusBadgeStyles(user.status)}>
+                    {getStatusLabel(user.status)}
+                  </span>
                 </div>
               )}
             </div>
@@ -222,7 +264,7 @@ export default function ViewUserModal(props: ViewUserModalProps) {
                   disabled={isLoading}
                   isLoading={isLoading}
                 >
-                  {"Save"}
+                  Save
                 </Button>
               </div>
             ) : (

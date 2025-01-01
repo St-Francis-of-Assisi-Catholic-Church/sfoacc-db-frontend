@@ -58,7 +58,8 @@ export default function LoginForm() {
         // Small delay to ensure the session is updated
         setTimeout(() => {
           router.push(callbackUrl);
-          router.refresh(); // Force a refresh of the navigation state
+          // router.refresh(); // Force a refresh of the navigation state
+          window.location.reload();
         }, 100);
       }
     } catch (error) {

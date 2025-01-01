@@ -15,7 +15,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  // FormDescription,
 } from "@/components/ui/form";
 import {
   Select,
@@ -30,8 +29,7 @@ import React, { useState } from "react";
 import { toast } from "sonner";
 import { ErrorAlert } from "@/components/ui/errorAlert";
 import { useSession } from "next-auth/react";
-import { UserRole, UserStatus } from "@/types";
-// import { RefreshCw } from "lucide-react";
+import { UserRole } from "@/types";
 
 interface AddUserModalProps {
   onUserAdded: () => void;
@@ -40,27 +38,15 @@ interface AddUserModalProps {
 interface UserFormData {
   email: string;
   full_name: string;
-  role?: UserRole;
-  status?: UserStatus;
-  password?: string;
-}
-
-function generateRandomPassword(length: number = 12) {
-  const charset =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
-  let password = "";
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * charset.length);
-    password += charset[randomIndex];
-  }
-  return password;
+  role: UserRole;
+  is_active: boolean;
+  password: string;
 }
 
 export default function AddUserModal({ onUserAdded }: AddUserModalProps) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // const [showPassword, setShowPassword] = useState(false);
 
   const { data: session } = useSession();
 
@@ -69,14 +55,10 @@ export default function AddUserModal({ onUserAdded }: AddUserModalProps) {
       full_name: "",
       email: "",
       role: "user",
-      status: "reset_required",
-      password: generateRandomPassword(),
+      is_active: true,
+      password: "password",
     },
   });
-
-  // const regeneratePassword = () => {
-  //   form.setValue("password", generateRandomPassword());
-  // };
 
   const onSubmit = async (data: UserFormData) => {
     try {
@@ -90,15 +72,6 @@ export default function AddUserModal({ onUserAdded }: AddUserModalProps) {
         return;
       }
 
-      // Prepare the request payload
-      const requestData = {
-        email: data.email,
-        full_name: data.full_name,
-        role: data.role || "user",
-        status: data.status || "reset_required",
-        // password: data.password || generateRandomPassword(),
-      };
-
       const response = await fetch(`/api/v1/user-management/users`, {
         method: "POST",
         headers: {
@@ -106,23 +79,23 @@ export default function AddUserModal({ onUserAdded }: AddUserModalProps) {
           Authorization: `Bearer ${session?.accessToken}`,
           Accept: "application/json",
         },
-        body: JSON.stringify(requestData),
+        body: JSON.stringify(data),
       });
 
-      const responseData = await response.json();
-
       if (!response.ok) {
-        throw new Error(
-          responseData.message || responseData.detail || "Failed to add user"
-        );
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to add user");
       }
 
+      console.log("response", response);
+
+      // const newUser = await response.json();
       onUserAdded();
       setOpen(false);
       form.reset();
       toast.success("User added successfully");
     } catch (err) {
-      console.error("Error adding user:", err);
+      console.log("error", err);
       const error = err as Error;
       const errorMessage = error.message || "Failed to add user";
       setError(errorMessage);
@@ -145,7 +118,7 @@ export default function AddUserModal({ onUserAdded }: AddUserModalProps) {
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 ">
             {error && (
               <ErrorAlert message={error} onClose={() => setError(null)} />
             )}
@@ -189,9 +162,10 @@ export default function AddUserModal({ onUserAdded }: AddUserModalProps) {
             <FormField
               control={form.control}
               name="role"
+              rules={{ required: "Role is required" }}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Role (Optional)</FormLabel>
+                  <FormLabel>Role</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -207,51 +181,28 @@ export default function AddUserModal({ onUserAdded }: AddUserModalProps) {
                       <SelectItem value="super_admin">Super Admin</SelectItem>
                     </SelectContent>
                   </Select>
-                  {/* <FormDescription>
-                    Defaults to User if not selected
-                  </FormDescription> */}
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* <FormField
+            <FormField
               control={form.control}
-              name="password"
+              name="is_active"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Temporary Password (Optional)</FormLabel>
-                  <div className="flex gap-2">
-                    <FormControl>
-                      <Input
-                        type={showPassword ? "text" : "password"}
-                        {...field}
-                        placeholder="Auto-generated if empty"
-                      />
-                    </FormControl>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={regeneratePassword}
-                      className="h-8"
-                    >
-                      <RefreshCw className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <FormDescription>
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="text-xs text-muted-foreground hover:text-primary"
-                    >
-                      {showPassword ? "Hide" : "Show"} password
-                    </button>
-                  </FormDescription>
-                  <FormMessage />
+                <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                  <FormControl>
+                    <input
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={field.onChange}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                  </FormControl>
+                  <FormLabel className="font-normal">Active User</FormLabel>
                 </FormItem>
               )}
-            /> */}
+            />
 
             <div className="flex justify-end space-x-2 pt-4">
               <Button

@@ -127,13 +127,13 @@ export default async function ProfilePage() {
                   <td className="px-4 py-[3px]">
                     <span
                       className={cn(
-                        "px-2 py-[3px] text-sm rounded-full ",
-                        session?.user.is_active
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
+                        "px-2 py-[3px] text-sm rounded-full "
+                        // session?.user.is_active
+                        //   ? "bg-green-100 text-green-800"
+                        //   : "bg-red-100 text-red-800"
                       )}
                     >
-                      {session?.user.is_active ? "Active" : "Inactive"}
+                      {session?.user.status}
                     </span>
                   </td>
                 </tr>

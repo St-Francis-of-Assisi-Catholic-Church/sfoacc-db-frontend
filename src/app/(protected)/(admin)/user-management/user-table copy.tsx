@@ -25,6 +25,7 @@ import {
   RenderApiModule,
 } from "ag-grid-community";
 import { Button } from "@/components/ui/button";
+
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { RefreshCw, Search } from "lucide-react";
@@ -33,7 +34,7 @@ import { ErrorAlert } from "@/components/ui/errorAlert";
 import AddUserModal from "./add-user-modal";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useSession } from "next-auth/react";
-import { UserRole, UserStatus } from "@/types";
+import { UserRole } from "@/types";
 import ViewUserModal from "./view-user-modal";
 
 interface User {
@@ -41,48 +42,25 @@ interface User {
   full_name: string;
   email: string;
   role: UserRole;
-  status: UserStatus;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
 
 interface StatusCellRendererParams {
-  value: UserStatus;
+  value: boolean;
 }
 
-const StatusCellRenderer = ({ value }: StatusCellRendererParams) => {
-  const statusConfig = {
-    active: {
-      bgColor: "bg-green-100",
-      textColor: "text-green-800",
-      label: "Active",
-    },
-    disabled: {
-      bgColor: "bg-red-100",
-      textColor: "text-red-800",
-      label: "Disabled",
-    },
-    reset_required: {
-      bgColor: "bg-yellow-100",
-      textColor: "text-yellow-800",
-      label: "Reset Required",
-    },
-  };
-
-  const config = statusConfig[value];
-
-  return (
-    <span
-      className={cn(
-        "px-2 py-1 rounded text-sm",
-        config.bgColor,
-        config.textColor
-      )}
-    >
-      {config.label}
-    </span>
-  );
-};
+const StatusCellRenderer = ({ value }: StatusCellRendererParams) => (
+  <span
+    className={cn(
+      "px-2 py-1 rounded text-sm",
+      value ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+    )}
+  >
+    {value ? "Active" : "Inactive"}
+  </span>
+);
 
 const UserTable = () => {
   const gridRef = useRef<AgGridReact>(null);
@@ -109,10 +87,12 @@ const UserTable = () => {
               Authorization: `Bearer ${session?.accessToken}`,
               "Content-Type": "application/json",
               Accept: "application/json",
+              // Add these headers for CORS
               "Access-Control-Allow-Origin": "*",
               "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
               "Access-Control-Allow-Headers": "Content-Type, Authorization",
             },
+            // Add these fetch options
             mode: "cors",
             credentials: "include",
           }
@@ -158,7 +138,6 @@ const UserTable = () => {
     ),
     cellDataType: false,
   };
-
   const columnDefs = useMemo<ColDef[]>(
     () => [
       { field: "id", headerName: "ID", maxWidth: 70, minWidth: 60 },
@@ -171,7 +150,7 @@ const UserTable = () => {
       { field: "email", minWidth: 240, filter: true },
       { field: "role", minWidth: 180, filter: true },
       {
-        field: "status",
+        field: "is_active",
         headerName: "Status",
         minWidth: 120,
         filter: true,
