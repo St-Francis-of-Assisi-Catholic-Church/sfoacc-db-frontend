@@ -20,8 +20,6 @@ export default {
           const email: string = credentials.email as string;
           const password: string = credentials.password as string;
 
-          console.log("hhh", process.env.API_URL);
-
           const response = await fetch(
             `http://13.60.62.124:8000/api/v1/auth/login`,
             {

@@ -3,12 +3,15 @@ import Image from "next/image";
 import notFoundImage from "@public/light-404.png";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 const ErrorBlock = () => {
+  const session = useSession();
   return (
     <div className="min-h-screen  overflow-y-auto flex justify-center items-center p-10">
       <div className="w-full flex flex-col items-center">
         <div className="max-w-[740px]">
+          {JSON.stringify(session)}
           <Image
             src={notFoundImage}
             alt="error image"
