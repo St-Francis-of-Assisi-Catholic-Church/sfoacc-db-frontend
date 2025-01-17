@@ -1,9 +1,8 @@
 "use client";
-
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import React, { FormEvent, useState } from "react";
 import { useSearchParams } from "next/navigation";
+
 import { ErrorAlert } from "../ui/errorAlert";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
@@ -11,21 +10,21 @@ import { handleSignInWithEmail } from "@/lib/actions/auth/handleSignin";
 import { toast } from "sonner";
 
 interface LoginFormData {
-  email: string;
+  email: string; // Changed from username to email to match the server action
   password: string;
 }
 
 export default function LoginForm() {
-  const router = useRouter();
+  // const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/user-management";
+  const callbackUrl = searchParams.get("callbackUrl");
 
   const [formData, setFormData] = useState<LoginFormData>({
-    email: "",
+    email: "", // Changed from username to email
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>("");
   const [rememberMe, setRememberMe] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -53,27 +52,18 @@ export default function LoginForm() {
         return;
       }
 
-      if (response?.success) {
-        toast.success("Successfully logged in!");
-        // Small delay to ensure the session is updated
-        setTimeout(() => {
-          router.push(callbackUrl);
-          // router.refresh(); // Force a refresh of the navigation state
-          window.location.reload();
-        }, 100);
-      }
+      // No need to manually redirect as NextAuth will handle the redirect
     } catch (error) {
       console.error("Login error:", error);
-      const errorMessage = "An unexpected error occurred. Please try again.";
-      setError(errorMessage);
-      toast.error(errorMessage);
+      setError("An unexpected error occurred. Please try again.");
+      toast.error(`An unexpected error occurred. Please try again. ${error}`);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 ">
       <div className="my-2 hidden xl:block">
         <h1 className="font-semibold">Welcome back,</h1>
         <p>Please sign in below to continue</p>

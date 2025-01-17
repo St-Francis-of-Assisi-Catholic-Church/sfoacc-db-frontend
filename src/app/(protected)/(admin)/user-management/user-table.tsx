@@ -22,126 +22,67 @@ import {
   DateFilterModule,
   NumberFilterModule,
   TextFilterModule,
+  RenderApiModule,
 } from "ag-grid-community";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { ApiSimulator, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { RefreshCw, Search } from "lucide-react";
 import { toast } from "sonner";
 import { ErrorAlert } from "@/components/ui/errorAlert";
 import AddUserModal from "./add-user-modal";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { useSession } from "next-auth/react";
+import { UserRole, UserStatus } from "@/types";
+import ViewUserModal from "./view-user-modal";
 
 interface User {
   id: number;
-  fullname: string;
+  full_name: string;
   email: string;
   role: UserRole;
   status: UserStatus;
-  dateCreated: string;
-  lastUpdated: string;
+  created_at: string;
+  updated_at: string;
 }
-
-type UserRole = "super admin" | "admin" | "user" | "audit";
-type UserStatus = "active" | "disabled";
 
 interface StatusCellRendererParams {
   value: UserStatus;
 }
 
-const initialUsers: User[] = [
-  {
-    id: 1,
-    fullname: "John Smith",
-    email: "john.smith@company.com",
-    role: "super admin",
-    status: "active",
-    dateCreated: "2024-12-01T08:00:00Z",
-    lastUpdated: "2024-12-26T08:00:00Z",
-  },
-  {
-    id: 2,
-    fullname: "Sarah Johnson",
-    email: "sarah.j@company.com",
-    role: "admin",
-    status: "active",
-    dateCreated: "2024-12-10T09:30:00Z",
-    lastUpdated: "2024-12-26T08:00:00Z",
-  },
-  {
-    id: 3,
-    fullname: "Michael Chen",
-    email: "m.chen@company.com",
-    role: "user",
-    status: "disabled",
-    dateCreated: "2024-12-15T14:20:00Z",
-    lastUpdated: "2024-12-26T08:00:00Z",
-  },
-];
+const StatusCellRenderer = ({ value }: StatusCellRendererParams) => {
+  const statusConfig = {
+    active: {
+      bgColor: "bg-green-100",
+      textColor: "text-green-800",
+      label: "Active",
+    },
+    disabled: {
+      bgColor: "bg-red-100",
+      textColor: "text-red-800",
+      label: "Disabled",
+    },
+    reset_required: {
+      bgColor: "bg-yellow-100",
+      textColor: "text-yellow-800",
+      label: "Reset Required",
+    },
+  };
 
-const ActionCellRenderer = (props: CustomCellRendererProps<User>) => {
-  const user = props.data;
-  if (!user) return null;
+  const config = statusConfig[value];
 
   return (
-    <div className="flex gap-2">
-      <Dialog>
-        <DialogTrigger asChild className="w-full">
-          <Button variant="outline" size="sm" className="mt-1">
-            View
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>User Details</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div>
-              <strong>Name:</strong> {user.fullname}
-            </div>
-            <div>
-              <strong>Email:</strong> {user.email}
-            </div>
-            <div>
-              <strong>Role:</strong> {user.role}
-            </div>
-            <div>
-              <strong>Status:</strong> {user.status}
-            </div>
-            <div>
-              <strong>Created:</strong>{" "}
-              {new Date(user.dateCreated).toLocaleString()}
-            </div>
-            <div>
-              <strong>Last Updated:</strong>{" "}
-              {new Date(user.lastUpdated).toLocaleString()}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+    <span
+      className={cn(
+        "px-2 py-1 rounded text-sm",
+        config.bgColor,
+        config.textColor
+      )}
+    >
+      {config.label}
+    </span>
   );
 };
-
-const StatusCellRenderer = ({ value }: StatusCellRendererParams) => (
-  <span
-    className={cn(
-      "px-2 py-1 rounded text-sm",
-      value === "active"
-        ? "bg-green-100 text-green-800"
-        : "bg-red-100 text-red-800"
-    )}
-  >
-    {value}
-  </span>
-);
 
 const UserTable = () => {
   const gridRef = useRef<AgGridReact>(null);
@@ -150,31 +91,60 @@ const UserTable = () => {
   const [rowData, setRowData] = useState<User[] | null>(null);
   const [searchText, setSearchText] = useState("");
 
+  const { data: session } = useSession();
+
   const isMobile = useMediaQuery("(min-width: 768px)");
 
-  const fetchData = useCallback(async ({ refresh = false } = {}) => {
-    setIsLoading(true);
-    setError(null);
+  const fetchData = useCallback(
+    async ({ refresh = false } = {}) => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      await ApiSimulator(true);
-      setRowData(initialUsers);
+      try {
+        const response = await fetch(
+          `/api/v1/user-management/users?skip=0&limit=100`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${session?.accessToken}`,
+              "Content-Type": "application/json",
+              Accept: "application/json",
+              "Access-Control-Allow-Origin": "*",
+              "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+              "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            },
+            mode: "cors",
+            credentials: "include",
+          }
+        );
 
-      if (gridRef.current?.api) {
-        gridRef.current.api.sizeColumnsToFit();
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.message || `Failed to fetch users: ${response.statusText}`
+          );
+        }
+
+        const data = await response.json();
+        setRowData(data);
+
+        if (gridRef.current?.api) {
+          gridRef.current.api.sizeColumnsToFit();
+        }
+        if (refresh) toast.success("Data refreshed successfully");
+      } catch (err) {
+        console.error("Fetch error:", err);
+        const error = err as Error;
+        const errorMessage = error.message || "Failed to fetch users";
+        setError(errorMessage);
+        toast.error(errorMessage);
+        setRowData(null);
+      } finally {
+        setIsLoading(false);
       }
-      if (refresh) toast.success("Data refreshed successfully");
-    } catch (err) {
-      const error = err as Error;
-      const errorMessage =
-        "message" in error ? error.message : "Failed to fetch data";
-      setError(errorMessage);
-      toast.error(errorMessage);
-      setRowData(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    [session?.accessToken]
+  );
 
   const actionColumn: ColDef<User> = {
     headerName: "Actions",
@@ -183,7 +153,9 @@ const UserTable = () => {
     minWidth: 80,
     sortable: false,
     filter: false,
-    cellRenderer: ActionCellRenderer,
+    cellRenderer: (props: CustomCellRendererProps) => (
+      <ViewUserModal {...props} onRefreshData={refreshData} />
+    ),
     cellDataType: false,
   };
 
@@ -191,7 +163,7 @@ const UserTable = () => {
     () => [
       { field: "id", headerName: "ID", maxWidth: 70, minWidth: 60 },
       {
-        field: "fullname",
+        field: "full_name",
         headerName: "Full Name",
         filter: true,
         minWidth: 180,
@@ -200,19 +172,20 @@ const UserTable = () => {
       { field: "role", minWidth: 180, filter: true },
       {
         field: "status",
+        headerName: "Status",
         minWidth: 120,
         filter: true,
         cellRenderer: StatusCellRenderer,
       },
       {
-        field: "dateCreated",
+        field: "created_at",
         headerName: "Created At",
         minWidth: 240,
         filter: true,
         valueFormatter: (params) => new Date(params.value).toLocaleString(),
       },
       {
-        field: "lastUpdated",
+        field: "updated_at",
         headerName: "Last Updated",
         minWidth: 240,
         filter: true,
@@ -241,10 +214,6 @@ const UserTable = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  const handleUserAdded = useCallback((newUser: User) => {
-    setRowData((prevData) => (prevData ? [...prevData, newUser] : [newUser]));
-  }, []);
 
   const refreshData = useCallback(async () => {
     await fetchData({ refresh: true });
@@ -275,7 +244,7 @@ const UserTable = () => {
             {isMobile && "Refresh"}
           </Button>
 
-          <AddUserModal onUserAdded={handleUserAdded} />
+          <AddUserModal onUserAdded={() => refreshData()} />
         </div>
       </div>
 
@@ -314,6 +283,7 @@ const UserTable = () => {
               NumberFilterModule,
               DateFilterModule,
               CustomFilterModule,
+              RenderApiModule,
             ]}
           />
         </div>

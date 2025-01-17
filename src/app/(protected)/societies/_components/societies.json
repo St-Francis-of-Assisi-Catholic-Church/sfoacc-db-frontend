@@ -1,0 +1,114 @@
+{
+  "societies": [
+    {
+      "id": 1,
+      "name": "St. Theresa of Child Jesus Society",
+      "description": "A society dedicated to following the 'Little Way' of St. Theresa, focusing on performing small acts with great love and devotion.",
+      "meetingSchedule": "First Sunday of every month",
+      "meetingTime": "2:00 PM",
+      "meetingVenue": "St. Theresa's Chapel",
+      "created_at": "2023-01-15T08:00:00Z",
+      "updated_at": "2024-01-10T10:30:00Z"
+    },
+    {
+      "id": 2,
+      "name": "Holy Family Akan Society",
+      "description": "A community that promotes family values and Akan cultural heritage in harmony with Catholic teachings.",
+      "meetingSchedule": "Second Sunday of every month",
+      "meetingTime": "3:30 PM",
+      "meetingVenue": "Parish Hall - Room 101",
+      "created_at": "2023-02-20T09:15:00Z",
+      "updated_at": "2024-01-12T14:20:00Z"
+    },
+    {
+      "id": 3,
+      "name": "St. Cecilia Choir Society",
+      "description": "Dedicated to promoting sacred music and leading the congregation in worship through song and praise.",
+      "meetingSchedule": "Every Saturday",
+      "meetingTime": "4:00 PM",
+      "meetingVenue": "Choir Practice Room",
+      "created_at": "2023-03-10T10:30:00Z",
+      "updated_at": "2024-01-15T16:45:00Z"
+    },
+    {
+      "id": 4,
+      "name": "Legion of Mary Society",
+      "description": "A society focused on Marian devotion and works of mercy in service to the Church and community.",
+      "meetingSchedule": "Every Wednesday",
+      "meetingTime": "5:30 PM",
+      "meetingVenue": "Mary's Chapel",
+      "created_at": "2023-04-05T11:45:00Z",
+      "updated_at": "2024-01-14T09:15:00Z"
+    },
+    {
+      "id": 5,
+      "name": "St. Vincent de Paul Society",
+      "description": "Committed to serving the poor and marginalized through charitable works and social justice initiatives.",
+      "meetingSchedule": "Last Sunday of every month",
+      "meetingTime": "1:00 PM",
+      "meetingVenue": "Parish Center - Conference Room",
+      "created_at": "2023-05-01T13:00:00Z",
+      "updated_at": "2024-01-16T11:30:00Z"
+    },
+    {
+      "id": 6,
+      "name": "Divine Mercy Society",
+      "description": "Dedicated to spreading the message of Divine Mercy as revealed to St. Faustina, promoting God's endless mercy and compassion.",
+      "meetingSchedule": "First Friday of every month",
+      "meetingTime": "3:00 PM",
+      "meetingVenue": "Divine Mercy Chapel",
+      "created_at": "2023-06-15T09:30:00Z",
+      "updated_at": "2024-01-17T13:45:00Z"
+    },
+    {
+      "id": 7,
+      "name": "Sacred Heart of Jesus Society",
+      "description": "Focused on devotion to the Sacred Heart of Jesus, promoting personal consecration and reparation through prayer and good works.",
+      "meetingSchedule": "First Friday of every month",
+      "meetingTime": "7:00 PM",
+      "meetingVenue": "Sacred Heart Chapel",
+      "created_at": "2023-07-01T10:00:00Z",
+      "updated_at": "2024-01-18T15:20:00Z"
+    },
+    {
+      "id": 8,
+      "name": "Catholic Youth Association",
+      "description": "Engaging young Catholics in faith formation, leadership development, and community service while building lasting friendships.",
+      "meetingSchedule": "Every Saturday",
+      "meetingTime": "2:00 PM",
+      "meetingVenue": "Youth Center",
+      "created_at": "2023-08-10T11:15:00Z",
+      "updated_at": "2024-01-19T09:30:00Z"
+    },
+    {
+      "id": 9,
+      "name": "Catholic Women's League",
+      "description": "Empowering Catholic women through spiritual growth, leadership opportunities, and community service projects.",
+      "meetingSchedule": "Third Sunday of every month",
+      "meetingTime": "1:30 PM",
+      "meetingVenue": "Parish Hall - Main Room",
+      "created_at": "2023-09-20T14:30:00Z",
+      "updated_at": "2024-01-20T11:45:00Z"
+    },
+    {
+      "id": 10,
+      "name": "Knights of St. John International",
+      "description": "A fraternal organization dedicated to charitable works, defending the faith, and supporting the Church through various initiatives.",
+      "meetingSchedule": "Second Saturday of every month",
+      "meetingTime": "10:00 AM",
+      "meetingVenue": "Knights' Hall",
+      "created_at": "2023-10-05T16:00:00Z",
+      "updated_at": "2024-01-21T10:15:00Z"
+    },
+    {
+      "id": 11,
+      "name": "Knights and Ladies of the Altar",
+      "description": "A dedicated group of altar servers committed to serving at Mass and other liturgical celebrations with reverence and dignity. Members receive training in liturgical practices and grow in their understanding of the Mass.",
+      "meetingSchedule": "Every Saturday",
+      "meetingTime": "9:00 AM",
+      "meetingVenue": "Sacristy & Main Church",
+      "created_at": "2023-11-01T09:00:00Z",
+      "updated_at": "2024-01-22T08:30:00Z"
+    }
+  ]
+}

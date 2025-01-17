@@ -14,7 +14,7 @@ export default function Home() {
   return (
     <div>
       <div className="min-h-screen bg-background flex items-center overflow-hidden w-full">
-        <div className="min-h-screen basis-full flex flex-wrap w-full justify-center overflow-y-auto">
+        <div className="min-h-screen basis-full flex flex-wrap w-full justify-center overflow-y-auto ">
           <div
             className="basis-1/2 bg-primary w-full relative hidden xl:flex justify-center items-center bg-gradient-to-br 
             from-primary-600 via-primary-400 to-primary-600"
@@ -41,7 +41,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="min-h-screen basis-full md:basis-1/2 w-full px-4 py-5 flex justify-center items-center border">
+          <div className="min-h-screen basis-full md:basis-1/2 w-full px-4 py-5 flex justify-center items-center ">
             <div className="w-full lg:w-[460px]">
               <div className=" mb-8 xl:hidden flex flex-col justify-center items-center">
                 <Image
