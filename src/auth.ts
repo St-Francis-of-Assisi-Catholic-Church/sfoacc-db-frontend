@@ -1,13 +1,7 @@
 import NextAuth from "next-auth";
 import authConfig from "./auth.config";
 
-export const {
-  handlers: { GET, POST },
-  auth,
-  signIn,
-  signOut,
-  unstable_update,
-} = NextAuth({
+export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
   ...authConfig,
   pages: {
     signIn: "/",
@@ -46,17 +40,7 @@ export const {
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
   trustHost: true,
+  // basePath: "/api/auth",
   //   debug: process.env.NODE_ENV === "development",
   debug: true,
-  // cookies: {
-  //   pkceCodeVerifier: {
-  //     name: "next-auth.pkce.code_verifier",
-  //     options: {
-  //       httpOnly: true,
-  //       sameSite: "lax",
-  //       path: "/",
-  //       secure: process.env.NODE_ENV === "production",
-  //     },
-  //   },
-  // },
 });

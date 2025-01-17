@@ -21,22 +21,22 @@ export default async function RootLayout({
 }>) {
   const session = await auth();
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        suppressHydrationWarning
-        spellCheck
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <SessionProvider session={session} refetchOnWindowFocus={true}>
-          <SonnerToaster
-            expand={false}
-            position="top-right"
-            richColors
-            closeButton
-          />
-          {children}
-        </SessionProvider>
-      </body>
-    </html>
+    <>
+      <html lang="en">
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        >
+          <SessionProvider session={session}>
+            <SonnerToaster
+              expand={false}
+              position="top-right"
+              richColors
+              closeButton
+            />
+            {children}
+          </SessionProvider>
+        </body>
+      </html>
+    </>
   );
 }
