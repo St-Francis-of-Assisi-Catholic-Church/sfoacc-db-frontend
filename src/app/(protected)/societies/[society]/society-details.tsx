@@ -6,13 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
 import societiesData from "../_components/societies.json";
 import { ISociety } from "../_components/society-table";
-import { metaObject } from "@/config/site.config";
 import { SocietyLeadershipCard } from "./society-leadership-card";
 import SocietyMeetingScheduleCard from "./society-meeting-schedule-card";
-
-export const metadata = {
-  ...metaObject("Societies "),
-};
 
 export default function SocietyDetails() {
   const params = useParams();

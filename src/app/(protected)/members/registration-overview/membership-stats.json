@@ -1,0 +1,40 @@
+{
+  "membershipStats": [
+    {
+      "id": "total-members",
+      "title": "Total Registered Members",
+      "value": 3600,
+      "icon": "Users"
+    },
+    {
+      "id": "verified-members",
+      "title": "Verified Members",
+      "value": 2845,
+      "subtitle": "79% of total members",
+      "icon": "UserCheck"
+    },
+
+    {
+      "id": "pending-verification",
+      "title": "Pending Verification",
+      "value": 755,
+      "subtitle": "21% of total members",
+      "icon": "UserRoundX"
+    },
+    {
+      "id": "church-ids",
+      "title": "Members with Church IDs",
+      "value": 2150,
+      "subtitle": "59.7% of total members",
+      "icon": "Fingerprint"
+    },
+    {
+      "id": "pending-ids",
+      "title": "Pending Church ID Assignment",
+      "value": 1450,
+      "subtitle": "40.3% of total members",
+      "icon": "ShieldAlert"
+    }
+  ],
+  "lastUpdated": "2024-01-17T12:00:00Z"
+}

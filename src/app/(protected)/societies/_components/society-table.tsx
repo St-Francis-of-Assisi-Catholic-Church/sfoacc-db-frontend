@@ -126,7 +126,7 @@ export function SocietiesGrid() {
         </div>
       </div>
 
-      <div className="overflow-auto h-full">
+      <div className="overflow-auto h-full pr-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {displayedSocieties.map((society) => (
             <SocietyCard key={society.id} society={society} />
