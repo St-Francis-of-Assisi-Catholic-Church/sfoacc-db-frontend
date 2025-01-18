@@ -1,11 +1,12 @@
 import {
+  BookUser,
   ChartPie,
   Church,
   Cog,
   LucideIcon,
   UserCog,
-  // UserPlus,
-  // UserRoundCheck,
+  UserPlus,
+  UserRoundCheck,
   Users,
 } from "lucide-react";
 
@@ -38,23 +39,28 @@ export const sideBarNavs: SideBarNavItem[] = [
     title: "Members",
     icon: Users,
     href: "/members",
-    // child: [
-    //   {
-    //     title: "Overview",
-    //     href: "/members/",
-    //     icon: ChartPie,
-    //   },
-    //   {
-    //     title: "Add New Member",
-    //     href: "/members/add-new-member",
-    //     icon: UserPlus,
-    //   },
-    //   {
-    //     title: "Verify Member",
-    //     href: "/members/verify-member",
-    //     icon: UserRoundCheck,
-    //   },
-    // ],
+    child: [
+      {
+        title: "Registration Overview",
+        href: "/members/registration-overview",
+        icon: ChartPie,
+      },
+      {
+        title: "All Members",
+        href: "/members",
+        icon: BookUser,
+      },
+      {
+        title: "Add New Member",
+        href: "/members/add-new-member",
+        icon: UserPlus,
+      },
+      {
+        title: "Verify Member",
+        href: "/members/verify-member",
+        icon: UserRoundCheck,
+      },
+    ],
   },
 
   {
