@@ -13,6 +13,15 @@ import FamilyBackgroundCard from "./_components/familyCard";
 import OccupationCard from "./_components/ocuupationCard";
 import SocietalMembershipsCard from "./_components/societalMembershipCard";
 import { SkillsCard } from "./_components/skillsCard";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDownIcon } from "lucide-react";
+import ContactInformationCard from "./_components/contactInformationCard";
 
 export default function MemberDetailsView() {
   const params = useParams();
@@ -31,29 +40,58 @@ export default function MemberDetailsView() {
   }
 
   return (
-    <div className="w-full space-y-6  pr-2 md:pr-4">
-      {/* Header Card */}
-      <HeaderCard member={member} />
+    <>
+      <div className=" h-full flex flex-col justify-between gap-2 ">
+        <div className="border w-full h-8 flex justify-end gap-2">
+          {/* <Button className="h-8 px-3">
+           
+          </Button> */}
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex flex-row justify-between items-center bg-primary text-primary-foreground shadow hover:bg-primary/90 h-8 rounded-md px-3 text-xs">
+              Actions
+              <ChevronDownIcon className="h-4 w-4 ml-2" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="mr-2 w-52">
+              <DropdownMenuItem>Generate ChurchID</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Send Verfication Message</DropdownMenuItem>
+              <DropdownMenuItem>Verify Account</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
-      {/* Personal information */}
-      <PersonalnformationCard member={member} />
+        <div className="overflow-auto h-full w-full space-y-6 pr-2 md:pr-0">
+          {/* Header Card */}
+          <HeaderCard member={member} />
 
-      <OccupationCard />
+          {/* Personal information */}
+          <PersonalnformationCard member={member} refetch={() => {}} />
 
-      <FamilyBackgroundCard />
+          {/* contact information */}
+          <ContactInformationCard member={member} />
 
-      {/* emergency contact card */}
-      <EmergencyContactCard />
+          {/* occupation */}
+          <OccupationCard />
 
-      {/* medical conditio cards */}
-      <MedicalConditionsCard />
+          {/* family background */}
+          <FamilyBackgroundCard />
 
-      {/* Sacraments Card */}
-      <SacrementsCard />
+          {/* emergency contact card */}
+          <EmergencyContactCard />
 
-      <SocietalMembershipsCard />
+          {/* medical conditio cards */}
+          <MedicalConditionsCard />
 
-      <SkillsCard />
-    </div>
+          {/* Sacraments Card */}
+          <SacrementsCard />
+
+          <SocietalMembershipsCard />
+
+          <SkillsCard />
+
+          <div className="h-[2vh" />
+        </div>
+      </div>
+    </>
   );
 }
