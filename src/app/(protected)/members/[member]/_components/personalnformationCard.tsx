@@ -1,413 +1,363 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import BaseModal from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { IMember } from "../../_components/member-columns";
-import { Pencil } from "lucide-react";
-// import { toast } from "sonner";
 
-type Props = {
+import { Pencil } from "lucide-react";
+import { IMember } from "../../_components/member-columns";
+
+interface Props {
   member: IMember;
   refetch: () => void;
-};
+}
+
+interface PersonalInfo {
+  firstName: string;
+  otherNames: string;
+  lastName: string;
+  maidenName: string;
+  gender: string;
+  dateOfBirth: string;
+  placeOfBirth: string;
+  hometown: string;
+  region: string;
+  country: string;
+  maritalStatus: string;
+}
 
 export default function PersonalInformationCard({ member, refetch }: Props) {
-  const [isEditingPersonal, setIsEditingPersonal] = useState(false);
-  const [isEditingContact, setIsEditingContact] = useState(false);
-  const [editedMember, setEditedMember] = useState(member);
+  const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
+    firstName: member.firstName,
+    otherNames: member.otherNames,
+    lastName: member.lastName,
+    maidenName: member.maidenName,
+    gender: member.gender,
+    dateOfBirth: member.dateOfBirth,
+    placeOfBirth: member.placeOfBirth,
+    hometown: member.hometown,
+    region: member.region,
+    country: member.country,
+    maritalStatus: member.maritalStatus,
+  });
+
+  const handleUpdateInfo = (newInfo: PersonalInfo) => {
+    setPersonalInfo(newInfo);
+  };
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>Personal Information</CardTitle>
+        <UpdatePersonalModal
+          currentInfo={personalInfo}
+          onUpdate={handleUpdateInfo}
+          refetch={refetch}
+        />
+      </CardHeader>
+      <CardContent className="grid gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Full Name
+              </label>
+              <p>
+                {personalInfo.firstName} {personalInfo.otherNames}{" "}
+                {personalInfo.lastName}
+              </p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Maiden Name
+              </label>
+              <p>{personalInfo.maidenName}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Gender
+              </label>
+              <p>{personalInfo.gender}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Date of Birth
+              </label>
+              <p>{new Date(personalInfo.dateOfBirth).toLocaleDateString()}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Place of Birth
+              </label>
+              <p>{personalInfo.placeOfBirth}</p>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Hometown
+              </label>
+              <p>{personalInfo.hometown}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Region
+              </label>
+              <p>{personalInfo.region}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Country
+              </label>
+              <p>{personalInfo.country}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Marital Status
+              </label>
+              <p>{personalInfo.maritalStatus}</p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+interface UpdatePersonalModalProps {
+  currentInfo: PersonalInfo;
+  onUpdate: (info: PersonalInfo) => void;
+  refetch: () => void;
+}
+
+function UpdatePersonalModal({
+  currentInfo,
+  onUpdate,
+  refetch,
+}: UpdatePersonalModalProps) {
+  const [localInfo, setLocalInfo] = useState<PersonalInfo>(currentInfo);
   const [isLoading, setIsLoading] = useState(false);
 
-  const updateMember = async (data: Partial<IMember>) => {
-    setIsLoading(true);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setLocalInfo((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setLocalInfo((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSave = async () => {
     try {
-      const response = await fetch(`/api/members/${member.systemID}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+      setIsLoading(true);
+      // TODO: Add API call here
+      // const response = await fetch('/api/member/personal-info', {
+      //   method: 'PUT',
+      //   body: JSON.stringify(localInfo)
+      // });
 
-      if (!response.ok) {
-        throw new Error("Failed to update member");
-      }
+      // Simulating API delay
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
+      onUpdate(localInfo);
       refetch();
-      setIsEditingPersonal(false);
-      setIsEditingContact(false);
     } catch (error) {
-      console.log(error);
+      console.error("Failed to save personal information:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handlePersonalInfoSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const personalInfoData = {
-      firstName: editedMember.firstName,
-      lastName: editedMember.lastName,
-      otherNames: editedMember.otherNames,
-      maidenName: editedMember.maidenName,
-      gender: editedMember.gender,
-      dateOfBirth: editedMember.dateOfBirth,
-      placeOfBirth: editedMember.placeOfBirth,
-      hometown: editedMember.hometown,
-      region: editedMember.region,
-      country: editedMember.country,
-      maritalStatus: editedMember.maritalStatus,
-    };
-    await updateMember(personalInfoData);
+  const handleCancel = () => {
+    setLocalInfo(currentInfo);
   };
 
-  const handleContactInfoSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const contactInfoData = {
-      mobileNumber: editedMember.mobileNumber,
-      whatsAppNumber: editedMember.whatsAppNumber,
-      emaillAddress: editedMember.emaillAddress,
-    };
-    await updateMember(contactInfoData);
-  };
-
-  const handleInputChange = (field: keyof IMember, value: string) => {
-    setEditedMember((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  const isFormValid = () => {
+    return (
+      localInfo.firstName.trim() !== "" &&
+      localInfo.lastName.trim() !== "" &&
+      localInfo.gender !== "" &&
+      localInfo.dateOfBirth !== ""
+    );
   };
 
   return (
-    <>
-      {/* Personal Information */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Personal Information</CardTitle>
-          <Dialog open={isEditingPersonal} onOpenChange={setIsEditingPersonal}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="icon">
-                <Pencil className="h-4 w-4" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Edit Personal Information</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handlePersonalInfoSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">First Name</label>
-                      <Input
-                        value={editedMember.firstName}
-                        onChange={(e) =>
-                          handleInputChange("firstName", e.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Other Names</label>
-                      <Input
-                        value={editedMember.otherNames}
-                        onChange={(e) =>
-                          handleInputChange("otherNames", e.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Last Name</label>
-                      <Input
-                        value={editedMember.lastName}
-                        onChange={(e) =>
-                          handleInputChange("lastName", e.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Maiden Name</label>
-                      <Input
-                        value={editedMember.maidenName}
-                        onChange={(e) =>
-                          handleInputChange("maidenName", e.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Gender</label>
-                      <Select
-                        value={editedMember.gender}
-                        onValueChange={(value) =>
-                          handleInputChange("gender", value)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="male">Male</SelectItem>
-                          <SelectItem value="female">Female</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">
-                        Marital Status
-                      </label>
-                      <Select
-                        value={editedMember.maritalStatus}
-                        onValueChange={(value) =>
-                          handleInputChange("maritalStatus", value)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="single">Single</SelectItem>
-                          <SelectItem value="married">Married</SelectItem>
-                          <SelectItem value="divorced">Divorced</SelectItem>
-                          <SelectItem value="widowed">Widowed</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">
-                        Date of Birth
-                      </label>
-                      <Input
-                        type="date"
-                        value={editedMember.dateOfBirth?.split("T")[0]}
-                        onChange={(e) =>
-                          handleInputChange("dateOfBirth", e.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">
-                        Place of Birth
-                      </label>
-                      <Input
-                        value={editedMember.placeOfBirth}
-                        onChange={(e) =>
-                          handleInputChange("placeOfBirth", e.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Hometown</label>
-                      <Input
-                        value={editedMember.hometown}
-                        onChange={(e) =>
-                          handleInputChange("hometown", e.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Region</label>
-                      <Input
-                        value={editedMember.region}
-                        onChange={(e) =>
-                          handleInputChange("region", e.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Country</label>
-                      <Input
-                        value={editedMember.country}
-                        onChange={(e) =>
-                          handleInputChange("country", e.target.value)
-                        }
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button
-                    variant="outline"
-                    type="button"
-                    onClick={() => setIsEditingPersonal(false)}
-                    disabled={isLoading}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={isLoading}>
-                    {isLoading ? "Saving..." : "Save Changes"}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </CardHeader>
-        <CardContent className="grid gap-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Full Name
-                </label>
-                <p>
-                  {member.firstName} {member.otherNames} {member.lastName}
-                </p>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Maiden Name
-                </label>
-                <p>{member.maidenName}</p>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Gender
-                </label>
-                <p>{member.gender}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Date of Birth
-                </label>
-                <p>{new Date(member.dateOfBirth).toLocaleDateString()}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Place of Birth
-                </label>
-                <p>{member.placeOfBirth}</p>
-              </div>
+    <BaseModal
+      title="Update Personal Information"
+      buttonComponent={
+        <Button variant="outline" size="icon">
+          <Pencil className="h-4 w-4" />
+        </Button>
+      }
+      ctaOnClicked={handleSave}
+      ctaTitle="Save"
+      isCtaDisabled={isLoading || !isFormValid()}
+      isLoading={isLoading}
+      cancelOnClicked={handleCancel}
+      onCloseModal={handleCancel}
+    >
+      <div className="px-6 py-4 overflow-auto max-h-[70vh]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-4">
+            <div className="flex flex-col space-y-2">
+              <label htmlFor="firstName" className="text-sm font-medium">
+                First Name *
+              </label>
+              <Input
+                id="firstName"
+                name="firstName"
+                value={localInfo.firstName}
+                onChange={handleInputChange}
+                disabled={isLoading}
+                required
+              />
             </div>
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Hometown
-                </label>
-                <p>{member.hometown}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Region
-                </label>
-                <p>{member.region}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Country
-                </label>
-                <p>{member.country}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Marital Status
-                </label>
-                <p>{member.maritalStatus}</p>
-              </div>
+
+            <div className="flex flex-col space-y-2">
+              <label htmlFor="otherNames" className="text-sm font-medium">
+                Other Names
+              </label>
+              <Input
+                id="otherNames"
+                name="otherNames"
+                value={localInfo.otherNames}
+                onChange={handleInputChange}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label htmlFor="lastName" className="text-sm font-medium">
+                Last Name *
+              </label>
+              <Input
+                id="lastName"
+                name="lastName"
+                value={localInfo.lastName}
+                onChange={handleInputChange}
+                disabled={isLoading}
+                required
+              />
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label htmlFor="maidenName" className="text-sm font-medium">
+                Maiden Name
+              </label>
+              <Input
+                id="maidenName"
+                name="maidenName"
+                value={localInfo.maidenName}
+                onChange={handleInputChange}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label htmlFor="gender" className="text-sm font-medium">
+                Gender *
+              </label>
+              <select
+                name="gender"
+                id="gender"
+                value={localInfo.gender}
+                onChange={handleSelectChange}
+                disabled={isLoading}
+                className="w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background"
+                required
+              >
+                <option value="">Select gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Contact Information */}
-      <Card className="mt-6">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Contact Information</CardTitle>
-          <Dialog open={isEditingContact} onOpenChange={setIsEditingContact}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="icon">
-                <Pencil className="h-4 w-4" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Edit Contact Information</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleContactInfoSubmit} className="space-y-4">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Mobile Number</label>
-                    <Input
-                      value={editedMember.mobileNumber}
-                      onChange={(e) =>
-                        handleInputChange("mobileNumber", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">
-                      WhatsApp Number
-                    </label>
-                    <Input
-                      value={editedMember.whatsAppNumber}
-                      onChange={(e) =>
-                        handleInputChange("whatsAppNumber", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Email Address</label>
-                    <Input
-                      type="email"
-                      value={editedMember.emaillAddress}
-                      onChange={(e) =>
-                        handleInputChange("emaillAddress", e.target.value)
-                      }
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button
-                    variant="outline"
-                    type="button"
-                    onClick={() => setIsEditingContact(false)}
-                    disabled={isLoading}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={isLoading}>
-                    {isLoading ? "Saving..." : "Save Changes"}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">
-              Mobile Number
-            </label>
-            <p>{member.mobileNumber}</p>
+          <div className="space-y-4">
+            <div className="flex flex-col space-y-2">
+              <label htmlFor="dateOfBirth" className="text-sm font-medium">
+                Date of Birth *
+              </label>
+              <Input
+                id="dateOfBirth"
+                name="dateOfBirth"
+                type="date"
+                value={localInfo.dateOfBirth}
+                onChange={handleInputChange}
+                disabled={isLoading}
+                required
+              />
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label htmlFor="placeOfBirth" className="text-sm font-medium">
+                Place of Birth
+              </label>
+              <Input
+                id="placeOfBirth"
+                name="placeOfBirth"
+                value={localInfo.placeOfBirth}
+                onChange={handleInputChange}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label htmlFor="hometown" className="text-sm font-medium">
+                Hometown
+              </label>
+              <Input
+                id="hometown"
+                name="hometown"
+                value={localInfo.hometown}
+                onChange={handleInputChange}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label htmlFor="region" className="text-sm font-medium">
+                Region
+              </label>
+              <Input
+                id="region"
+                name="region"
+                value={localInfo.region}
+                onChange={handleInputChange}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label htmlFor="maritalStatus" className="text-sm font-medium">
+                Marital Status
+              </label>
+              <select
+                name="maritalStatus"
+                id="maritalStatus"
+                value={localInfo.maritalStatus}
+                onChange={handleSelectChange}
+                disabled={isLoading}
+                className="w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background"
+              >
+                <option value="">Select marital status</option>
+                <option value="Single">Single</option>
+                <option value="Married">Married</option>
+                <option value="Divorced">Divorced</option>
+                <option value="Widowed">Widowed</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">
-              WhatsApp Number
-            </label>
-            <p>{member.whatsAppNumber}</p>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">
-              Email Address
-            </label>
-            <p>{member.emaillAddress}</p>
-          </div>
-        </CardContent>
-      </Card>
-    </>
+        </div>
+      </div>
+    </BaseModal>
   );
 }

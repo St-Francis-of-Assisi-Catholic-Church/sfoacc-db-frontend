@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDownIcon } from "lucide-react";
+import ContactInformationCard from "./_components/contactInformationCard";
 
 export default function MemberDetailsView() {
   const params = useParams();
@@ -66,8 +67,13 @@ export default function MemberDetailsView() {
           {/* Personal information */}
           <PersonalnformationCard member={member} refetch={() => {}} />
 
+          {/* contact information */}
+          <ContactInformationCard member={member} />
+
+          {/* occupation */}
           <OccupationCard />
 
+          {/* family background */}
           <FamilyBackgroundCard />
 
           {/* emergency contact card */}
@@ -82,6 +88,8 @@ export default function MemberDetailsView() {
           <SocietalMembershipsCard />
 
           <SkillsCard />
+
+          <div className="h-[2vh" />
         </div>
       </div>
     </>
