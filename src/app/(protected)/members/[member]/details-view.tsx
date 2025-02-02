@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import React from "react";
+import React, { useState } from "react";
 import membersData from "../_components/members.json";
 import { IMember } from "../_components/member-columns";
 import SacrementsCard from "./_components/sacrementsCard";
@@ -13,19 +13,20 @@ import FamilyBackgroundCard from "./_components/familyCard";
 import OccupationCard from "./_components/ocuupationCard";
 import SocietalMembershipsCard from "./_components/societalMembershipCard";
 import { SkillsCard } from "./_components/skillsCard";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ChevronDownIcon } from "lucide-react";
+
 import ContactInformationCard from "./_components/contactInformationCard";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { RefreshCw } from "lucide-react";
+import AdminActions from "./_components/adminActionss";
 
 export default function MemberDetailsView() {
   const params = useParams();
   const memberID = params.member as string;
+  const [isLoading] = useState(false);
+
+  const isMobile = useMediaQuery("(min-width: 768px)");
 
   const member = membersData.members.find(
     (m) => m.systemID === parseInt(memberID)
@@ -42,22 +43,17 @@ export default function MemberDetailsView() {
   return (
     <>
       <div className=" h-full flex flex-col justify-between gap-2 ">
-        <div className="border w-full h-8 flex justify-end gap-2">
-          {/* <Button className="h-8 px-3">
-           
-          </Button> */}
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex flex-row justify-between items-center bg-primary text-primary-foreground shadow hover:bg-primary/90 h-8 rounded-md px-3 text-xs">
-              Actions
-              <ChevronDownIcon className="h-4 w-4 ml-2" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="mr-2 w-52">
-              <DropdownMenuItem>Generate ChurchID</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Send Verfication Message</DropdownMenuItem>
-              <DropdownMenuItem>Verify Account</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className=" w-full h-8 flex justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            // onClick={refreshData}
+            className="flex items-center gap-2 h-8"
+          >
+            <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+            {isMobile && "Refresh"}
+          </Button>
+          <AdminActions member={member} />
         </div>
 
         <div className="overflow-auto h-full w-full space-y-6 pr-2 md:pr-0">
@@ -68,7 +64,7 @@ export default function MemberDetailsView() {
           <PersonalnformationCard member={member} refetch={() => {}} />
 
           {/* contact information */}
-          <ContactInformationCard member={member} />
+          <ContactInformationCard member={member} refetch={() => {}} />
 
           {/* occupation */}
           <OccupationCard />
