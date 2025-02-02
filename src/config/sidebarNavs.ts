@@ -6,7 +6,7 @@ import {
   LucideIcon,
   UserCog,
   UserPlus,
-  UserRoundCheck,
+  // UserRoundCheck,
   Users,
 } from "lucide-react";
 
@@ -55,11 +55,11 @@ export const sideBarNavs: SideBarNavItem[] = [
         href: "/members/add-new-member",
         icon: UserPlus,
       },
-      {
-        title: "Verify Member",
-        href: "/members/verify-member",
-        icon: UserRoundCheck,
-      },
+      // {
+      //   title: "Verify Member",
+      //   href: "/members/verify-member",
+      //   icon: UserRoundCheck,
+      // },
     ],
   },
 

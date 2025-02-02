@@ -13,8 +13,14 @@ import FamilyBackgroundCard from "./_components/familyCard";
 import OccupationCard from "./_components/ocuupationCard";
 import SocietalMembershipsCard from "./_components/societalMembershipCard";
 import { SkillsCard } from "./_components/skillsCard";
-import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDownIcon } from "lucide-react";
 
 export default function MemberDetailsView() {
   const params = useParams();
@@ -33,37 +39,51 @@ export default function MemberDetailsView() {
   }
 
   return (
-    <div className=" h-full flex flex-col justify-between gap-2 ">
-      <div className="border w-full h-8 flex justify-end gap-2">
-        <Button className="h-8 px-3">
-          Actions <ChevronDown className="h-4 w-4 ml-2" />
-        </Button>
+    <>
+      <div className=" h-full flex flex-col justify-between gap-2 ">
+        <div className="border w-full h-8 flex justify-end gap-2">
+          {/* <Button className="h-8 px-3">
+           
+          </Button> */}
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex flex-row justify-between items-center bg-primary text-primary-foreground shadow hover:bg-primary/90 h-8 rounded-md px-3 text-xs">
+              Actions
+              <ChevronDownIcon className="h-4 w-4 ml-2" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="mr-2 w-52">
+              <DropdownMenuItem>Generate ChurchID</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Send Verfication Message</DropdownMenuItem>
+              <DropdownMenuItem>Verify Account</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        <div className="overflow-auto h-full w-full space-y-6 pr-2 md:pr-0">
+          {/* Header Card */}
+          <HeaderCard member={member} />
+
+          {/* Personal information */}
+          <PersonalnformationCard member={member} refetch={() => {}} />
+
+          <OccupationCard />
+
+          <FamilyBackgroundCard />
+
+          {/* emergency contact card */}
+          <EmergencyContactCard />
+
+          {/* medical conditio cards */}
+          <MedicalConditionsCard />
+
+          {/* Sacraments Card */}
+          <SacrementsCard />
+
+          <SocietalMembershipsCard />
+
+          <SkillsCard />
+        </div>
       </div>
-
-      <div className="overflow-auto h-full w-full space-y-6 pr-2 md:pr-4">
-        {/* Header Card */}
-        <HeaderCard member={member} />
-
-        {/* Personal information */}
-        <PersonalnformationCard member={member} />
-
-        <OccupationCard />
-
-        <FamilyBackgroundCard />
-
-        {/* emergency contact card */}
-        <EmergencyContactCard />
-
-        {/* medical conditio cards */}
-        <MedicalConditionsCard />
-
-        {/* Sacraments Card */}
-        <SacrementsCard />
-
-        <SocietalMembershipsCard />
-
-        <SkillsCard />
-      </div>
-    </div>
+    </>
   );
 }
