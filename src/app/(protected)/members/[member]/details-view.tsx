@@ -43,12 +43,12 @@ export default function MemberDetailsView() {
   return (
     <>
       <div className=" h-full flex flex-col justify-between gap-2 ">
-        <div className=" w-full h-8 flex justify-end gap-2">
+        <div className=" w-full h-8 flex justify-end items-center ">
           <Button
             variant="outline"
             size="sm"
             // onClick={refreshData}
-            className="flex items-center gap-2 h-8"
+            className="flex items-center gap-2 h-8 mr-4"
           >
             <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
             {isMobile && "Refresh"}

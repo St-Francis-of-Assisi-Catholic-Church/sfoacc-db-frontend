@@ -31,3 +31,32 @@ export function formatDate(dateString: string): string {
     day: "numeric",
   });
 }
+
+export const generateInitials = (name: string): string => {
+  return name
+    .split(" ")
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("");
+};
+
+export const generateNewChurchId = (
+  firstName: string,
+  lastName: string,
+  dateOfBirth: string,
+  oldChurchId: string
+): string => {
+  // Get initials
+  const firstNameInitials = generateInitials(firstName);
+  const lastNameInitials = generateInitials(lastName);
+
+  // Parse date of birth (assuming format YYYY-MM-DD)
+  const dob = new Date(dateOfBirth);
+  const day = dob.getDate().toString().padStart(2, "0");
+  const month = (dob.getMonth() + 1).toString().padStart(2, "0");
+
+  // Ensure old church ID is 3 digits
+  const formattedOldId = oldChurchId.padStart(3, "0");
+
+  // Combine all parts
+  return `${firstNameInitials}${lastNameInitials}${day}${month}-${formattedOldId}`;
+};
