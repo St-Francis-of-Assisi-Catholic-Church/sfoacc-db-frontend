@@ -29,6 +29,7 @@ type Props = {
   buttonComponent: React.JSX.Element;
   leftButtonComponent?: React.JSX.Element;
   ctaTitle?: string;
+  cancelTitle?: string;
   children: ReactNode;
 };
 
@@ -52,6 +53,7 @@ const BaseModal = forwardRef<BaseModalRef, Props>(function (
     onCloseModal = () => {},
     onOpenModal = () => {},
     ctaTitle = "",
+    cancelTitle = "Cancel",
   },
   ref
 ) {
@@ -194,7 +196,7 @@ const BaseModal = forwardRef<BaseModalRef, Props>(function (
 
                           {/* Cancel Button */}
                           <Button
-                            title="Cancel"
+                            title={cancelTitle}
                             variant={"destructive"}
                             className="px-8  h-[30px]"
                             size={"sm"}
@@ -204,7 +206,7 @@ const BaseModal = forwardRef<BaseModalRef, Props>(function (
                             }}
                             disabled={false}
                           >
-                            Cancel
+                            {cancelTitle}
                           </Button>
                         </div>
                       </div>
