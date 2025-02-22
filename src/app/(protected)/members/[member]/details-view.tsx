@@ -56,7 +56,7 @@ export default function MemberDetailsView() {
           <AdminActions member={member} />
         </div>
 
-        <div className="overflow-auto h-full w-full space-y-6 pr-2 md:pr-0">
+        <div className="overflow-auto h-full w-full space-y-6 pr-2 md:pr-2">
           {/* Header Card */}
           <HeaderCard member={member} />
 

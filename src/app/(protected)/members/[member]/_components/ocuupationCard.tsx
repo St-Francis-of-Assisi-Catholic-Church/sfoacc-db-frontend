@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-interface Occupation {
+export interface Occupation {
   role: string;
   employer: string;
 }
