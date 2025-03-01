@@ -2,28 +2,110 @@ import { ColDef } from "ag-grid-community";
 import { CustomCellRendererProps } from "ag-grid-react";
 import Link from "next/link";
 
-export interface IMember {
-  systemID: number;
-  oldChurchID?: string;
-  newChurchID?: string;
-  lastName: string;
-  firstName: string;
-  maidenName: string;
-  otherNames: string;
-  dateOfBirth: string;
-  placeOfBirth: string;
+export interface IParishioner {
+  id: number;
+  old_church_id?: string;
+  new_church_id?: string;
+  last_name: string;
+  first_name: string;
+  maiden_name?: string;
+  other_names?: string;
+  date_of_birth: string;
+  place_of_birth: string;
   gender: string;
   hometown: string;
   region: string;
   country: string;
-  maritalStatus: string;
-  mobileNumber: string;
-  whatsAppNumber: string;
-  emaillAddress: string;
-  pictureURL: string;
+  marital_status: string;
+  mobile_number: string;
+  whatsapp_number?: string;
+  email_address: string;
+  place_of_worship: string;
+  current_residence: string;
+  membership_status: string;
+  verification_status: string;
+  created_at: string;
+  updated_at: string;
 }
 
-const actionColumn: ColDef<IMember> = {
+// Interface for family information
+export interface IFamilyInfo {
+  id: number;
+  spouse_name?: string | null;
+  spouse_status?: string | null;
+  spouse_phone?: string | null;
+  father_name?: string | null;
+  father_status?: string | null;
+  mother_name?: string | null;
+  mother_status?: string | null;
+  children: unknown[]; // You may want to define a more specific type for children
+  created_at: string;
+  updated_at: string;
+}
+
+// Interface for occupation
+export interface IOccupation {
+  id: number;
+  role?: string | null;
+  employer?: string | null;
+  parishioner_id: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// Interface for emergency contact
+export interface IEmergencyContact {
+  id: number;
+  name: string;
+  relationship: string;
+  primary_phone: string;
+  alternative_phone?: string | null;
+  parishioner_id: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// Interface for medical condition
+export interface IMedicalCondition {
+  id: number;
+  condition: string;
+  details?: string | null;
+  parishioner_id: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// Interface for sacrament
+export interface ISacrament {
+  id: number;
+  type: string;
+  date: string;
+  place: string;
+  minister: string;
+  parishioner_id: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// Interface for skill
+export interface ISkill {
+  id: number;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Detailed parishioner interface extending the base parishioner interface
+export interface IDetailedParishioner extends IParishioner {
+  family_info: IFamilyInfo;
+  occupation?: IOccupation;
+  emergency_contacts: IEmergencyContact[];
+  medical_conditions: IMedicalCondition[];
+  sacraments: ISacrament[];
+  skills: ISkill[];
+}
+
+const actionColumn: ColDef<IParishioner> = {
   headerName: "Actions",
   pinned: "right",
   maxWidth: 120,
@@ -33,7 +115,7 @@ const actionColumn: ColDef<IMember> = {
   cellRenderer: (props: CustomCellRendererProps) => (
     <>
       <Link
-        href={`/members/${props.data.systemID}`}
+        href={`/members/${props.data.id}`}
         className="hover:underline underline-offset-1 text-blue-800"
       >
         View Details
@@ -43,52 +125,52 @@ const actionColumn: ColDef<IMember> = {
   cellDataType: false,
 };
 
-const MemberColumnDefs: ColDef<IMember>[] = [
+const MemberColumnDefs: ColDef<IParishioner>[] = [
   {
-    field: "systemID",
-    headerName: "systemID",
+    field: "id",
+    headerName: "ID",
     filter: "agTextColumnFilter",
     minWidth: 80,
     pinned: "left",
   },
   {
-    field: "oldChurchID",
+    field: "old_church_id",
     headerName: "Old Church ID",
     filter: "agTextColumnFilter",
     minWidth: 80,
   },
   {
-    field: "newChurchID",
+    field: "new_church_id",
     headerName: "New Church ID",
     filter: "agTextColumnFilter",
     minWidth: 80,
   },
   {
-    field: "lastName",
+    field: "last_name",
     headerName: "Last Name",
     filter: "agTextColumnFilter",
     minWidth: 150,
   },
   {
-    field: "firstName",
+    field: "first_name",
     headerName: "First Name",
     filter: "agTextColumnFilter",
     minWidth: 150,
   },
   {
-    field: "maidenName",
+    field: "maiden_name",
     headerName: "Maiden Name",
     filter: "agTextColumnFilter",
     minWidth: 150,
   },
   {
-    field: "otherNames",
+    field: "other_names",
     headerName: "Other Names",
     filter: "agTextColumnFilter",
     minWidth: 150,
   },
   {
-    field: "dateOfBirth",
+    field: "date_of_birth",
     headerName: "Date of Birth",
     filter: "agDateColumnFilter",
     minWidth: 120,
@@ -98,7 +180,7 @@ const MemberColumnDefs: ColDef<IMember>[] = [
     },
   },
   {
-    field: "placeOfBirth",
+    field: "place_of_birth",
     headerName: "Place of Birth",
     filter: "agTextColumnFilter",
     minWidth: 150,
@@ -128,39 +210,71 @@ const MemberColumnDefs: ColDef<IMember>[] = [
     minWidth: 150,
   },
   {
-    field: "maritalStatus",
+    field: "marital_status",
     headerName: "Marital Status",
     filter: "agTextColumnFilter",
     minWidth: 130,
   },
   {
-    field: "mobileNumber",
+    field: "mobile_number",
     headerName: "Mobile Number",
     filter: "agTextColumnFilter",
     minWidth: 130,
   },
   {
-    field: "whatsAppNumber",
+    field: "whatsapp_number",
     headerName: "WhatsApp",
     filter: "agTextColumnFilter",
     minWidth: 130,
   },
   {
-    field: "emaillAddress",
+    field: "email_address",
     headerName: "Email",
     filter: "agTextColumnFilter",
     minWidth: 200,
   },
   {
-    field: "pictureURL",
-    headerName: "Picture",
-    filter: false,
-    sortable: false,
-    minWidth: 100,
-    cellRenderer: (params: CustomCellRendererProps) => {
-      return params.value ? (
-        <div className="flex items-center justify-center">{params.value}</div>
-      ) : null;
+    field: "place_of_worship",
+    headerName: "Place of Worship",
+    filter: "agTextColumnFilter",
+    minWidth: 150,
+  },
+  {
+    field: "current_residence",
+    headerName: "Current Residence",
+    filter: "agTextColumnFilter",
+    minWidth: 150,
+  },
+  {
+    field: "membership_status",
+    headerName: "Membership Status",
+    filter: "agTextColumnFilter",
+    minWidth: 150,
+  },
+  {
+    field: "verification_status",
+    headerName: "Verification Status",
+    filter: "agTextColumnFilter",
+    minWidth: 150,
+  },
+  {
+    field: "created_at",
+    headerName: "Created At",
+    filter: "agDateColumnFilter",
+    minWidth: 160,
+    valueFormatter: (params) => {
+      if (!params.value) return "";
+      return new Date(params.value).toLocaleString();
+    },
+  },
+  {
+    field: "updated_at",
+    headerName: "Updated At",
+    filter: "agDateColumnFilter",
+    minWidth: 160,
+    valueFormatter: (params) => {
+      if (!params.value) return "";
+      return new Date(params.value).toLocaleString();
     },
   },
   actionColumn,

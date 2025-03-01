@@ -1,78 +1,116 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from "react";
 import BaseModal, { BaseModalRef } from "@/components/ui/modal";
-import { IMember } from "../../../_components/member-columns";
+import { IParishioner } from "../../../_components/member-columns";
 import { useState } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+// import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useSession } from "next-auth/react";
+import Banner from "@/components/ui/banner";
 
 type MembershipStatus = "active" | "deceased" | "disabled";
 
 type Props = {
   modalRef: React.RefObject<BaseModalRef | null>;
-  member: IMember;
-};
-
-const updateMembership = async (
-  memberId: number,
-  status: MembershipStatus,
-  deceasedDate?: string
-) => {
-  // Simulated API call
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  // TODO: Replace with actual API call
-  // return fetch('/api/members/status', {
-  //   method: 'PATCH',
-  //   body: JSON.stringify({ memberId, status, deceasedDate }),
-  // });
+  parishioner: IParishioner;
+  refetch?: () => void;
 };
 
 export default function UpdateMembershipStatusModal({
-  member,
+  parishioner,
   modalRef,
+  refetch,
 }: Props) {
-  const [status, setStatus] = useState<MembershipStatus | null>(null);
-  const [deceasedDate, setDeceasedDate] = useState<string>("");
+  // Initialize with the parishioner's current membership status
+  const [status, setStatus] = useState<MembershipStatus>(
+    parishioner.membership_status as MembershipStatus
+  );
+  // const [deceasedDate, setDeceasedDate] = useState<string>(
+  //   parishioner.date_of_death || ""
+  // );
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { data: session } = useSession();
 
   const handleUpdateStatus = async () => {
     if (!status) return;
 
-    setIsLoading(true);
-    const statusInfo =
-      status === "deceased" ? `${status} (${deceasedDate})` : status;
+    // If status hasn't changed, no need to update
+    if (status === parishioner.membership_status) {
+      toast.info("No changes to update");
+      modalRef.current?.closeModal();
+      return;
+    }
 
-    toast.promise(
-      updateMembership(
-        member.systemID,
-        status,
-        status === "deceased" ? deceasedDate : undefined
-      ),
-      {
-        loading: "Updating membership status...",
-        success: () => {
-          modalRef.current?.closeModal();
-          setStatus(null);
-          setDeceasedDate("");
-          setIsLoading(false);
-          return `Successfully updated membership status to ${statusInfo}`;
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Get access token from next-auth session
+      const accessToken = session?.accessToken;
+
+      // API call to update membership status
+      const response = await fetch(`/api/v1/parishioners/${parishioner.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+          Authorization: `Bearer ${accessToken}`,
         },
-        error: "Failed to update membership status",
+        body: JSON.stringify({
+          membership_status: status,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        // Store the full error data for displaying in the banner
+        setError(JSON.stringify(errorData, null, 2));
+
+        if (errorData.errors && Array.isArray(errorData.errors)) {
+          // Format validation errors for toast notification
+          const errorMessages = errorData.errors
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .map((err: any) => err.msg)
+            .join("; ");
+          toast.error(errorMessages || "Validation failed");
+        } else {
+          toast.error(errorData.detail || "Failed to update membership status");
+        }
+        return; // Exit early
       }
-    );
+
+      // Success message
+      const statusInfo = status;
+      toast.success(`Successfully updated membership status to ${statusInfo}`);
+
+      // Reset and close modal
+      modalRef.current?.closeModal();
+      // setStatus(null);
+      // setDeceasedDate("");
+
+      // Refresh data if refetch function is provided
+      if (refetch) refetch();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error("Failed to update membership status:", error);
+      toast.error("Failed to update membership status");
+      setError(error.message || "Failed to update membership status");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClose = () => {
     modalRef.current?.closeModal();
-    setStatus(null);
-    setDeceasedDate("");
+    // Reset to parishioner's current values instead of null
+    setStatus((parishioner.membership_status as MembershipStatus) || null);
+    // setDeceasedDate(parishioner.date_of_death || "");
+    setError(null);
   };
 
-  const isValid =
-    status &&
-    (status !== "deceased" || (status === "deceased" && deceasedDate));
+  const isValid = status;
 
   return (
     <BaseModal
@@ -87,6 +125,22 @@ export default function UpdateMembershipStatusModal({
       cancelTitle="Cancel"
     >
       <div className="p-6 space-y-6">
+        {error && (
+          <div className="mb-4">
+            <Banner
+              variant="error"
+              title="API Error"
+              description="There was an error updating the membership status"
+              body={
+                <div className="text-sm py-1">
+                  <pre className="whitespace-pre-wrap overflow-auto max-h-40 p-2 bg-red-50 rounded">
+                    {error}
+                  </pre>
+                </div>
+              }
+            />
+          </div>
+        )}
         <div className="space-y-4">
           <h3 className="font-medium">Select new status</h3>
           <RadioGroup
@@ -110,7 +164,7 @@ export default function UpdateMembershipStatusModal({
               </div>
             </div>
           </RadioGroup>
-
+          {/* 
           {status === "deceased" && (
             <div className="space-y-2 pt-4">
               <Label htmlFor="deceased-date">Date of Death</Label>
@@ -122,7 +176,7 @@ export default function UpdateMembershipStatusModal({
                 max={new Date().toISOString().split("T")[0]}
               />
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </BaseModal>

@@ -49,6 +49,11 @@ body {
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
+
+    /* Scrolls */
+    --scroll-outer: #eaeaea;
+    --scroll-inner: #bebebe;
+    --scroll-hover: #929292;
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -75,6 +80,10 @@ body {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
+    --scroll-outer: #3e3a3a;
+    --scroll-inner: #585757;
+    --scroll-hover: #929292;
   }
 }
 
@@ -84,6 +93,44 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /** CUSTOM SCROLLBAR CSS*/
+  /* width */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+    border-radius: 200px;
+    transition: all 500ms;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: var(--scroll-outer);
+    border-radius: 200px;
+    margin: 8px; /*  10px */
+  }
+
+  /* Corner */
+  ::-webkit-scrollbar-corner {
+    background: var(--scroll-outer);
+    background: rgba(0, 0, 0, 0);
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: var(--scroll-inner);
+    border-radius: 5px;
+    transition: all 500ms;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--scroll-hover);
+  }
+
+  .custom-scrollbar-x::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -133,4 +180,23 @@ body {
   position: absolute;
   /* height: 100%; */
   text-align: center !important;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
 }

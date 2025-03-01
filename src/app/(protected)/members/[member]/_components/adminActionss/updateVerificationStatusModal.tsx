@@ -1,64 +1,99 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React from "react";
 import BaseModal, { BaseModalRef } from "@/components/ui/modal";
-import { IMember } from "../../../_components/member-columns";
+import { IParishioner } from "../../../_components/member-columns";
 import { useState } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import Banner from "@/components/ui/banner";
+import { useSession } from "next-auth/react";
 
 type VerificationStatus = "pending" | "verified" | "unverified";
 
 type Props = {
   modalRef: React.RefObject<BaseModalRef | null>;
-  member: IMember;
-};
-
-const updateVerification = async (
-  memberId: number,
-  status: VerificationStatus
-) => {
-  try {
-    // Simulated API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    // TODO: Replace with actual API call
-    // return fetch('/api/members/verification', {
-    //   method: 'PATCH',
-    //   body: JSON.stringify({ memberId, status }),
-    // });
-  } catch (error) {
-    throw new Error(
-      "Failed to update verification status. Please try again later."
-    );
-  }
+  parishioner: IParishioner;
+  refetch?: () => void;
 };
 
 export default function UpdateVerificationStatusModal({
-  member,
+  parishioner,
   modalRef,
+  refetch,
 }: Props) {
-  const [status, setStatus] = useState<VerificationStatus | null>(null);
+  // Initialize with the parishioner's current verification status
+  const [status, setStatus] = useState<VerificationStatus | null>(
+    (parishioner.verification_status as VerificationStatus) || null
+  );
   const [isLoading, setIsLoading] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const { data: session } = useSession();
 
   const handleUpdateStatus = async () => {
     if (!status) return;
 
-    setIsLoading(true);
-    setApiError(null);
+    // If status hasn't changed, no need to update
+    if (status === parishioner.verification_status) {
+      toast.info("No changes to update");
+      modalRef.current?.closeModal();
+      return;
+    }
 
     try {
-      await updateVerification(member.systemID, status);
+      setIsLoading(true);
+      setError(null);
+
+      // Get access token from next-auth session
+      const accessToken = session?.accessToken;
+
+      // API call to update verification status
+      const response = await fetch(`/api/v1/parishioners/${parishioner.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          verification_status: status,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        // Store the full error data for displaying in the banner
+        setError(JSON.stringify(errorData, null, 2));
+
+        if (errorData.errors && Array.isArray(errorData.errors)) {
+          // Format validation errors for toast notification
+          const errorMessages = errorData.errors
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .map((err: any) => err.msg)
+            .join("; ");
+          toast.error(errorMessages || "Validation failed");
+        } else {
+          toast.error(
+            errorData.detail || "Failed to update verification status"
+          );
+        }
+        return; // Exit early
+      }
+
+      // Success message
       toast.success(`Successfully updated verification status to ${status}`);
+
+      // Reset and close modal
       modalRef.current?.closeModal();
-      setStatus(null);
-    } catch (error) {
-      const errorMessage = (error as Error).message;
-      setApiError(errorMessage);
+
+      // Refresh data if refetch function is provided
+      if (refetch) refetch();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error("Failed to update verification status:", error);
       toast.error("Failed to update verification status");
+      setError(error.message || "Failed to update verification status");
     } finally {
       setIsLoading(false);
     }
@@ -66,8 +101,9 @@ export default function UpdateVerificationStatusModal({
 
   const handleClose = () => {
     modalRef.current?.closeModal();
-    setStatus(null);
-    setApiError(null);
+    // Reset to parishioner's current value instead of null
+    setStatus((parishioner.verification_status as VerificationStatus) || null);
+    setError(null);
   };
 
   return (
@@ -83,13 +119,21 @@ export default function UpdateVerificationStatusModal({
       cancelTitle="Cancel"
     >
       <div className="p-6 space-y-6">
-        {apiError && (
-          <Banner
-            variant="error"
-            title="Error"
-            description={apiError}
-            className="mb-4"
-          />
+        {error && (
+          <div className="mb-4">
+            <Banner
+              variant="error"
+              title="API Error"
+              description="There was an error updating the verification status"
+              body={
+                <div className="text-sm py-1">
+                  <pre className="whitespace-pre-wrap overflow-auto max-h-40 p-2 bg-red-50 rounded">
+                    {error}
+                  </pre>
+                </div>
+              }
+            />
+          </div>
         )}
 
         <Banner

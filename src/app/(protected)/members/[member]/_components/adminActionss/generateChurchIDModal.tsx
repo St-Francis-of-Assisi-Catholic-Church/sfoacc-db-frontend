@@ -3,7 +3,7 @@
 
 import React from "react";
 import BaseModal, { BaseModalRef } from "@/components/ui/modal";
-import { IMember } from "../../../_components/member-columns";
+import { IParishioner } from "../../../_components/member-columns";
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,7 @@ import Banner from "@/components/ui/banner";
 
 type Props = {
   modalRef: React.RefObject<BaseModalRef | null>;
-  member: IMember;
+  parishioner: IParishioner;
 };
 
 type FormError = {
@@ -58,15 +58,22 @@ const validateOldChurchId = (
   return { isValid: true };
 };
 
-export default function GenerateChurchIDModal({ member, modalRef }: Props) {
-  const [oldChurchId, setOldChurchId] = useState(member.oldChurchID || "");
-  const [newChurchId, setNewChurchId] = useState(member.newChurchID || "");
+export default function GenerateChurchIDModal({
+  parishioner,
+  modalRef,
+}: Props) {
+  const [oldChurchId, setOldChurchId] = useState<string | null>(
+    parishioner.old_church_id || null
+  );
+  const [newChurchId, setNewChurchId] = useState<string | null>(
+    parishioner.new_church_id || null
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [formError, setFormError] = useState<FormError | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
 
   const handleGenerateId = () => {
-    const validation = validateOldChurchId(oldChurchId);
+    const validation = validateOldChurchId(oldChurchId!);
     if (!validation.isValid) {
       setFormError({ message: validation.error || "", field: "oldChurchId" });
       return;
@@ -74,10 +81,10 @@ export default function GenerateChurchIDModal({ member, modalRef }: Props) {
 
     setFormError(null);
     const generated = generateNewChurchId(
-      member.firstName,
-      member.lastName,
-      member.dateOfBirth,
-      oldChurchId
+      parishioner.first_name,
+      parishioner.last_name,
+      parishioner.date_of_birth,
+      oldChurchId!
     );
     setNewChurchId(generated);
   };
@@ -102,7 +109,7 @@ export default function GenerateChurchIDModal({ member, modalRef }: Props) {
     setApiError(null);
 
     try {
-      await saveChurchIds(member.systemID, oldChurchId, newChurchId);
+      await saveChurchIds(parishioner.id, oldChurchId, newChurchId);
       toast.success("Successfully saved Church IDs");
       modalRef.current?.closeModal();
     } catch (error) {
@@ -115,14 +122,15 @@ export default function GenerateChurchIDModal({ member, modalRef }: Props) {
 
   const handleClose = () => {
     modalRef.current?.closeModal();
-    setOldChurchId(member.oldChurchID || "");
-    setNewChurchId(member.newChurchID || "");
+    setOldChurchId(parishioner.old_church_id || "");
+    setNewChurchId(parishioner.new_church_id || "");
     setFormError(null);
     setApiError(null);
   };
 
   const hasChanges =
-    oldChurchId !== member.oldChurchID || newChurchId !== member.newChurchID;
+    oldChurchId !== parishioner.old_church_id ||
+    newChurchId !== parishioner.new_church_id;
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString("en-GB", {
@@ -205,20 +213,20 @@ export default function GenerateChurchIDModal({ member, modalRef }: Props) {
                 <Label className="text-muted-foreground text-sm">
                   First Name
                 </Label>
-                <div className="font-medium">{member.firstName}</div>
+                <div className="font-medium">{parishioner.first_name}</div>
               </div>
               <div>
                 <Label className="text-muted-foreground text-sm">
                   Last Name
                 </Label>
-                <div className="font-medium">{member.lastName}</div>
+                <div className="font-medium">{parishioner.last_name}</div>
               </div>
               <div>
                 <Label className="text-muted-foreground text-sm">
                   Date of Birth
                 </Label>
                 <div className="font-medium">
-                  {formatDate(member.dateOfBirth)}
+                  {formatDate(parishioner.date_of_birth)}
                 </div>
               </div>
             </div>
@@ -227,7 +235,7 @@ export default function GenerateChurchIDModal({ member, modalRef }: Props) {
           {/* System ID Display */}
           <div className="space-y-2">
             <Label>System ID</Label>
-            <Input value={member.systemID} disabled className="bg-muted" />
+            <Input value={parishioner.id} disabled className="bg-muted" />
           </div>
 
           {/* Old Church ID Input */}
@@ -235,7 +243,7 @@ export default function GenerateChurchIDModal({ member, modalRef }: Props) {
             <Label htmlFor="old-church-id">Old Church ID</Label>
             <Input
               id="old-church-id"
-              value={oldChurchId}
+              value={oldChurchId!}
               onChange={(e) => {
                 setOldChurchId(e.target.value);
                 // Clear error when user starts typing
@@ -248,9 +256,9 @@ export default function GenerateChurchIDModal({ member, modalRef }: Props) {
                 formError?.field === "oldChurchId" ? "border-red-500" : ""
               }
             />
-            {member.oldChurchID && hasChanges && (
+            {parishioner.old_church_id && hasChanges && (
               <div className="text-sm text-muted-foreground">
-                Current: {member.oldChurchID}
+                Current: {parishioner.old_church_id}
               </div>
             )}
           </div>
@@ -260,7 +268,7 @@ export default function GenerateChurchIDModal({ member, modalRef }: Props) {
             <Label>New Church ID</Label>
             <div className="gap-2 grid grid-cols-3">
               <Input
-                value={newChurchId}
+                value={newChurchId!}
                 onChange={(e) => {
                   setNewChurchId(e.target.value);
                   // Clear error when user starts typing
@@ -284,9 +292,9 @@ export default function GenerateChurchIDModal({ member, modalRef }: Props) {
                 Generate
               </Button>
             </div>
-            {member.newChurchID && hasChanges && (
+            {parishioner.new_church_id && hasChanges && (
               <div className="text-sm text-muted-foreground">
-                Current: {member.newChurchID}
+                Current: {parishioner.new_church_id}
               </div>
             )}
             <div className="text-xs text-muted-foreground">
