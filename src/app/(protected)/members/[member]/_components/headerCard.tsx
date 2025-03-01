@@ -1,13 +1,13 @@
 import React from "react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { IMember } from "../../_components/member-columns";
+import { IDetailedParishioner } from "../../_components/member-columns";
 
 type Props = {
-  member: IMember;
+  parishioner: IDetailedParishioner;
 };
 
-export default function HeaderCard({ member }: Props) {
+export default function HeaderCard({ parishioner }: Props) {
   return (
     <Card>
       <CardHeader className="p-3 sm:p-6">
@@ -15,15 +15,19 @@ export default function HeaderCard({ member }: Props) {
           {/* Left section with avatar and name */}
           <div className="flex flex-row gap-3 w-full sm:w-auto">
             <Avatar className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 flex-shrink-0">
-              <AvatarImage src={member.pictureURL} alt={member.firstName} />
+              <AvatarImage
+                src={parishioner.first_name}
+                alt={parishioner.first_name}
+              />
               <AvatarFallback>
-                {member.firstName[0]}
-                {member.lastName[0]}
+                {parishioner.first_name[0]}
+                {parishioner.last_name[0]}
               </AvatarFallback>
             </Avatar>
             <div className="space-y-1 min-w-0">
               <CardTitle className="text-base sm:text-lg md:text-2xl truncate">
-                {member.firstName} {member.otherNames} {member.lastName}
+                {parishioner.first_name} {parishioner.other_names}{" "}
+                {parishioner.maiden_name} {parishioner.last_name}
               </CardTitle>
               <div className="space-y-0">
                 <table className="w-full table-fixed">
@@ -34,7 +38,7 @@ export default function HeaderCard({ member }: Props) {
                         systemID:
                       </td>
                       <td className="text-xs sm:text-sm font-semibold pl-1 truncate">
-                        {member.systemID}
+                        {parishioner.id}
                       </td>
                     </tr>
                     {/* oldchurchID */}
@@ -43,7 +47,7 @@ export default function HeaderCard({ member }: Props) {
                         old churchID:
                       </td>
                       <td className="text-xs sm:text-sm font-semibold pl-1 truncate">
-                        {member.oldChurchID}
+                        {parishioner.old_church_id}
                       </td>
                     </tr>
                     {/* new churchID */}
@@ -52,7 +56,7 @@ export default function HeaderCard({ member }: Props) {
                         new churchID:
                       </td>
                       <td className="text-xs sm:text-sm font-semibold pl-1 truncate">
-                        {member.newChurchID}
+                        {parishioner.new_church_id}
                       </td>
                     </tr>
                   </tbody>
@@ -70,7 +74,7 @@ export default function HeaderCard({ member }: Props) {
                     Verification Status:
                   </td>
                   <td className="text-xs sm:text-sm font-semibold pl-1">
-                    pending verification
+                    {parishioner.verification_status}
                   </td>
                 </tr>
                 <tr>
@@ -78,7 +82,7 @@ export default function HeaderCard({ member }: Props) {
                     Membership Status:
                   </td>
                   <td className="text-xs sm:text-sm font-semibold pl-1">
-                    active
+                    {parishioner.membership_status}
                   </td>
                 </tr>
               </tbody>

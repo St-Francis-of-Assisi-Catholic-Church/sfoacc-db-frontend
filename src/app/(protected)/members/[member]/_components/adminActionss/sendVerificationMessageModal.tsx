@@ -4,7 +4,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Mail, MessageSquare } from "lucide-react";
-import { IMember } from "../../../_components/member-columns";
+import { IParishioner } from "../../../_components/member-columns";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -12,7 +12,7 @@ type VerificationChannel = "sms" | "email";
 
 type Props = {
   modalRef: React.RefObject<BaseModalRef | null>;
-  member: IMember;
+  parishioner: IParishioner;
 };
 
 const sendVerification = async (
@@ -31,7 +31,7 @@ const sendVerification = async (
 };
 
 export default function SendVerificationMessageModal({
-  member,
+  parishioner,
   modalRef,
 }: Props) {
   const [channel, setChannel] = useState<VerificationChannel | null>(null);
@@ -44,7 +44,7 @@ export default function SendVerificationMessageModal({
     const channelInfo = getChannelInfo();
     setIsLoading(true);
 
-    toast.promise(sendVerification(member.systemID, channel), {
+    toast.promise(sendVerification(parishioner.id, channel), {
       loading: `Sending verification message via ${channelInfo.label}...`,
       success: () => {
         modalRef.current?.closeModal();
@@ -71,13 +71,13 @@ export default function SendVerificationMessageModal({
   const getChannelInfo = () => {
     if (channel === "sms") {
       return {
-        value: member.mobileNumber,
+        value: parishioner.mobile_number,
         icon: <MessageSquare className="h-4 w-4" />,
         label: "SMS",
       };
     }
     return {
-      value: member.emaillAddress,
+      value: parishioner.email_address,
       icon: <Mail className="h-4 w-4" />,
       label: "Email",
     };
@@ -112,12 +112,12 @@ export default function SendVerificationMessageModal({
                   <RadioGroupItem
                     value="sms"
                     id="sms"
-                    disabled={!member.mobileNumber}
+                    disabled={!parishioner.mobile_number}
                   />
                   <Label htmlFor="sms" className="flex items-center space-x-2">
                     <MessageSquare className="h-4 w-4" />
                     <span>
-                      SMS ({member.mobileNumber || "No number provided"})
+                      SMS ({parishioner.mobile_number || "No number provided"})
                     </span>
                   </Label>
                 </div>
@@ -125,7 +125,7 @@ export default function SendVerificationMessageModal({
                   <RadioGroupItem
                     value="email"
                     id="email"
-                    disabled={!member.emaillAddress}
+                    disabled={!parishioner.email_address}
                   />
                   <Label
                     htmlFor="email"
@@ -133,7 +133,7 @@ export default function SendVerificationMessageModal({
                   >
                     <Mail className="h-4 w-4" />
                     <span>
-                      Email ({member.emaillAddress || "No email provided"})
+                      Email ({parishioner.email_address || "No email provided"})
                     </span>
                   </Label>
                 </div>

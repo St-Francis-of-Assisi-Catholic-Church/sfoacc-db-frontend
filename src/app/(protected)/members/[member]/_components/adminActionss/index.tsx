@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChevronDownIcon } from "lucide-react";
 
-import { IMember } from "../../../_components/member-columns";
+import { IDetailedParishioner } from "../../../_components/member-columns";
 import SendVerificationMessageModal from "./sendVerificationMessageModal";
 import { BaseModalRef } from "@/components/ui/modal";
 import UpdateMembershipStatusModal from "./updateMembershipStatusModal";
@@ -16,7 +16,7 @@ import GenerateChurchIDModal from "./generateChurchIDModal";
 import UpdateVerificationStatusModal from "./updateVerificationStatusModal";
 
 type Props = {
-  member: IMember;
+  member: IDetailedParishioner;
 };
 
 export default function AdminActions({ member }: Props) {
@@ -77,21 +77,21 @@ export default function AdminActions({ member }: Props) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <GenerateChurchIDModal modalRef={churchIDModalRef} member={member} />
+      <GenerateChurchIDModal modalRef={churchIDModalRef} parishioner={member} />
 
       <SendVerificationMessageModal
         modalRef={verificationModalRef}
-        member={member}
+        parishioner={member}
       />
 
       <UpdateMembershipStatusModal
         modalRef={membershipStatusModalRef}
-        member={member}
+        parishioner={member}
       />
 
       <UpdateVerificationStatusModal
         modalRef={verificationStatusModalRef}
-        member={member}
+        parishioner={member}
       />
     </>
   );

@@ -26,16 +26,19 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
-import MemberColumnDefs, { IMember } from "./member-columns";
+import MemberColumnDefs, { IParishioner } from "./member-columns";
 
-import membersData from "./members.json";
+// import membersData from "./members.json";
+import { useSession } from "next-auth/react";
 
 export default function MembersTable() {
   const gridRef = useRef<AgGridReact>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [rowData, setRowData] = useState<IMember[] | null>(null);
+  const [rowData, setRowData] = useState<IParishioner[] | null>(null);
   const [searchText, setSearchText] = useState("");
+
+  const { data: session } = useSession();
 
   const isMobile = useMediaQuery("(min-width: 768px)");
 
@@ -44,7 +47,31 @@ export default function MembersTable() {
     setError(null);
 
     try {
-      setRowData(membersData.members);
+      const response = await fetch(`/api/v1/parishioners/all`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${session?.accessToken}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        },
+        mode: "cors",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message ||
+            `Failed to fetch parishioners: ${response.statusText}`
+        );
+      }
+      const result = await response.json();
+      console.log("response", result.data.parishioners);
+
+      setRowData(result.data.parishioners as IParishioner[]);
       if (refresh) toast.success("Data refreshed successfully");
     } catch (err) {
       console.error("Fetch error:", err);
