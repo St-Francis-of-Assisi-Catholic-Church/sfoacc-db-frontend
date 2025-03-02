@@ -142,8 +142,8 @@ export default function MemberDetailsView() {
 
           {/* family background */}
           <FamilyBackgroundCard
-          // parishioner={member}
-          // refetch={() => fetchParishioner({ refresh: true })}
+            parishioner={member}
+            refetch={() => fetchParishioner({ refresh: true })}
           />
 
           {/* emergency contact card */}
@@ -152,7 +152,7 @@ export default function MemberDetailsView() {
             refetch={() => fetchParishioner({ refresh: true })}
           />
 
-          {/* medical conditio cards */}
+          {/* medical conditions cards */}
           <MedicalConditionsCard
             parishioner={member}
             refetch={() => fetchParishioner({ refresh: true })}
@@ -165,6 +165,7 @@ export default function MemberDetailsView() {
           />
 
           {/* Societal Memberships Card */}
+          {/* TODO */}
           <SocietalMembershipsCard
           // member={member}
           // refetch={() => fetchParishioner({ refresh: true })}

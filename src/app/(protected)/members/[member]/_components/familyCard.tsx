@@ -1,13 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import BaseModal from "@/components/ui/modal";
 import { Pencil, Plus, Trash2 } from "lucide-react";
+import Banner from "@/components/ui/banner";
+import { useSession } from "next-auth/react";
+import { IDetailedParishioner } from "../../_components/member-columns";
+import { toast } from "sonner";
+
+interface Props {
+  parishioner: IDetailedParishioner;
+  refetch: () => void;
+}
 
 interface InfoItemProps {
   label: string;
-  value: string;
+  value: string | null | undefined;
 }
 
 interface Child {
@@ -15,14 +24,14 @@ interface Child {
 }
 
 interface Parent {
-  name: string;
-  status: string;
+  name: string | null;
+  status: string | null;
 }
 
 interface Spouse {
-  name: string;
-  status: string;
-  phone: string;
+  name: string | null;
+  status: string | null;
+  phone: string | null;
 }
 
 interface FamilyData {
@@ -37,35 +46,57 @@ const InfoItem: React.FC<InfoItemProps> = ({ label, value }) => (
     <label className="text-sm font-medium text-muted-foreground block">
       {label}
     </label>
-    <span className="block">{value}</span>
+    <span className="block">{value || "-"}</span>
   </div>
 );
 
-export default function FamilyBackgroundCard() {
+export default function FamilyBackgroundCard({ parishioner, refetch }: Props) {
   const [familyData, setFamilyData] = useState<FamilyData>({
     spouse: {
-      name: "Mary Addo",
-      status: "Alive",
-      phone: "+233 24 555 7890",
+      name: null,
+      status: null,
+      phone: null,
     },
-    children: [
-      { name: "John Addo Jr." },
-      { name: "Sarah Addo" },
-      { name: "Michael Addo" },
-    ],
+    children: [],
     father: {
-      name: "Peter Addo",
-      status: "Deceased",
+      name: null,
+      status: null,
     },
     mother: {
-      name: "Grace Addo",
-      status: "Alive",
+      name: null,
+      status: null,
     },
   });
+
+  // Initialize data when parishioner is available
+  useEffect(() => {
+    if (parishioner && parishioner.family_info) {
+      setFamilyData({
+        spouse: {
+          name: parishioner.family_info.spouse_name || null,
+          status: parishioner.family_info.spouse_status || null,
+          phone: parishioner.family_info.spouse_phone || null,
+        },
+        children: parishioner.family_info.children || [],
+        father: {
+          name: parishioner.family_info.father_name || null,
+          status: parishioner.family_info.father_status || null,
+        },
+        mother: {
+          name: parishioner.family_info.mother_name || null,
+          status: parishioner.family_info.mother_status || null,
+        },
+      });
+    }
+  }, [parishioner]);
 
   const handleUpdateFamily = (newData: FamilyData) => {
     setFamilyData(newData);
   };
+
+  if (!parishioner) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Card>
@@ -74,6 +105,8 @@ export default function FamilyBackgroundCard() {
         <UpdateFamilyModal
           currentFamily={familyData}
           onUpdate={handleUpdateFamily}
+          parishionerId={parishioner.id}
+          refetch={refetch}
         />
       </CardHeader>
       <CardContent>
@@ -132,14 +165,26 @@ export default function FamilyBackgroundCard() {
 interface UpdateFamilyModalProps {
   currentFamily: FamilyData;
   onUpdate: (family: FamilyData) => void;
+  parishionerId: number;
+  refetch: () => void;
 }
 
 function UpdateFamilyModal({
   currentFamily,
   onUpdate,
+  parishionerId,
+  refetch,
 }: UpdateFamilyModalProps) {
+  const { data: session } = useSession();
   const [localFamily, setLocalFamily] = useState<FamilyData>(currentFamily);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string>();
+  const [success, setSuccess] = useState<string>();
+
+  // Update localFamily when currentFamily changes
+  useEffect(() => {
+    setLocalFamily(currentFamily);
+  }, [currentFamily]);
 
   const handleSpouseChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -149,7 +194,7 @@ function UpdateFamilyModal({
       ...prev,
       spouse: {
         ...prev.spouse,
-        [name]: value,
+        [name]: value || null,
       },
     }));
   };
@@ -163,7 +208,7 @@ function UpdateFamilyModal({
       ...prev,
       [parent]: {
         ...prev[parent],
-        [name]: value,
+        [name]: value || null,
       },
     }));
   };
@@ -194,18 +239,46 @@ function UpdateFamilyModal({
   const handleSave = async () => {
     try {
       setIsLoading(true);
-      // TODO: Add API call here
-      // await fetch('/api/member/family-background', {
-      //   method: 'PUT',
-      //   body: JSON.stringify(localFamily)
-      // });
+      setError(undefined);
+      setSuccess(undefined);
 
-      // Simulating API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const accessToken = session?.accessToken;
+
+      if (!accessToken) {
+        throw new Error("Authentication token not found");
+      }
+
+      const response = await fetch(
+        `/api/v1/parishioners/${parishionerId}/family-info/batch`,
+        {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(localFamily),
+        }
+      );
+
+      if (!response.ok) {
+        const info = await response.json();
+        if (info.detail) {
+          throw new Error(info.detail);
+        } else throw new Error("Failed to update family info");
+      }
 
       onUpdate(localFamily);
-    } catch (error) {
+      setSuccess("Family information updated successfully");
+      toast.success("Family information updated successfully");
+
+      // Call refetch to update the parent component with the latest data
+      refetch();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       console.error("Failed to save family information:", error);
+      setError(error.message || "Failed to update family information");
+      toast.error(error.message || "Failed to update family information");
     } finally {
       setIsLoading(false);
     }
@@ -213,6 +286,8 @@ function UpdateFamilyModal({
 
   const handleCancel = () => {
     setLocalFamily(currentFamily);
+    setError(undefined);
+    setSuccess(undefined);
   };
 
   return (
@@ -231,6 +306,22 @@ function UpdateFamilyModal({
       onCloseModal={handleCancel}
     >
       <div className="px-6 py-4 space-y-6 overflow-auto max-h-[70vh]">
+        {success && (
+          <Banner
+            variant="success"
+            className="mb-4"
+            title="Success"
+            description={success}
+          />
+        )}
+        {error && (
+          <Banner
+            variant="error"
+            className="mb-4"
+            title="Error"
+            description={error}
+          />
+        )}
         {/* Spouse Information */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Spouse Information</h3>
@@ -239,7 +330,7 @@ function UpdateFamilyModal({
               <label className="text-sm font-medium">Name</label>
               <Input
                 name="name"
-                value={localFamily.spouse.name}
+                value={localFamily.spouse.name || ""}
                 onChange={handleSpouseChange}
                 disabled={isLoading}
               />
@@ -248,21 +339,21 @@ function UpdateFamilyModal({
               <label className="text-sm font-medium">Status</label>
               <select
                 name="status"
-                value={localFamily.spouse.status}
+                value={localFamily.spouse.status || ""}
                 onChange={handleSpouseChange}
                 disabled={isLoading}
                 className="w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background"
               >
                 <option value="">Select status</option>
-                <option value="Alive">Alive</option>
-                <option value="Deceased">Deceased</option>
+                <option value="alive">Alive</option>
+                <option value="deceased">Deceased</option>
               </select>
             </div>
             <div>
               <label className="text-sm font-medium">Phone</label>
               <Input
                 name="phone"
-                value={localFamily.spouse.phone}
+                value={localFamily.spouse.phone || ""}
                 onChange={handleSpouseChange}
                 disabled={isLoading}
               />
@@ -323,7 +414,7 @@ function UpdateFamilyModal({
                   <label className="text-sm font-medium">Name</label>
                   <Input
                     name="name"
-                    value={localFamily.father.name}
+                    value={localFamily.father.name || ""}
                     onChange={(e) => handleParentChange("father", e)}
                     disabled={isLoading}
                   />
@@ -332,14 +423,14 @@ function UpdateFamilyModal({
                   <label className="text-sm font-medium">Status</label>
                   <select
                     name="status"
-                    value={localFamily.father.status}
+                    value={localFamily.father.status || ""}
                     onChange={(e) => handleParentChange("father", e)}
                     disabled={isLoading}
                     className="w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background"
                   >
                     <option value="">Select status</option>
-                    <option value="Alive">Alive</option>
-                    <option value="Deceased">Deceased</option>
+                    <option value="alive">Alive</option>
+                    <option value="deceased">Deceased</option>
                   </select>
                 </div>
               </div>
@@ -353,7 +444,7 @@ function UpdateFamilyModal({
                   <label className="text-sm font-medium">Name</label>
                   <Input
                     name="name"
-                    value={localFamily.mother.name}
+                    value={localFamily.mother.name || ""}
                     onChange={(e) => handleParentChange("mother", e)}
                     disabled={isLoading}
                   />
@@ -362,14 +453,14 @@ function UpdateFamilyModal({
                   <label className="text-sm font-medium">Status</label>
                   <select
                     name="status"
-                    value={localFamily.mother.status}
+                    value={localFamily.mother.status || ""}
                     onChange={(e) => handleParentChange("mother", e)}
                     disabled={isLoading}
                     className="w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background"
                   >
                     <option value="">Select status</option>
-                    <option value="Alive">Alive</option>
-                    <option value="Deceased">Deceased</option>
+                    <option value="alive">Alive</option>
+                    <option value="deceased">Deceased</option>
                   </select>
                 </div>
               </div>

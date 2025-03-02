@@ -4,7 +4,7 @@ import BaseModal from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { FilePenLine, Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -13,26 +13,27 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { IDetailedParishioner } from "../../_components/member-columns";
-
-interface Props {
-  parishioner: IDetailedParishioner;
-  refetch: () => void;
-}
 
 interface MedicalCondition {
-  id?: number;
   condition: string;
-  notes?: string | null;
-  parishioner_id?: number;
-  created_at?: string;
-  updated_at?: string;
+  notes: string;
 }
 
-export default function MedicalConditionsCard({ parishioner, refetch }: Props) {
-  const [conditions, setConditions] = useState<MedicalCondition[]>(
-    parishioner.medical_conditions || []
-  );
+export default function MedicalConditionsCard() {
+  const [conditions, setConditions] = useState<MedicalCondition[]>([
+    {
+      condition: "Type 2 Diabetes",
+      notes: "",
+    },
+    {
+      condition: "Hypertension",
+      notes: "Regular blood pressure monitoring required",
+    },
+    {
+      condition: "Asthma",
+      notes: "Exercise-induced, carries inhaler when needed",
+    },
+  ]);
 
   const handleUpdateConditions = (newConditions: MedicalCondition[]) => {
     setConditions(newConditions);
@@ -209,7 +210,7 @@ function UpdateConditionsModal({
                 id="notes"
                 placeholder="Add any relevant notes"
                 name="notes"
-                value={currentCondition.notes!}
+                value={currentCondition.notes}
                 onChange={handleInputChange}
                 disabled={isLoading}
               />
@@ -246,19 +247,19 @@ function UpdateConditionsModal({
                       <div className="flex gap-2">
                         <Button
                           variant="ghost"
-                          size={"icon"}
+                          size="sm"
                           onClick={() => handleEditCondition(index)}
                           disabled={isLoading}
                         >
-                          <FilePenLine className="h-4 w-5 text-green-700" />
+                          Edit
                         </Button>
                         <Button
                           variant="ghost"
-                          size={"icon"}
+                          size="sm"
                           onClick={() => handleRemoveCondition(index)}
                           disabled={isLoading}
                         >
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                          Remove
                         </Button>
                       </div>
                     </TableCell>

@@ -28,6 +28,10 @@ export interface IParishioner {
   updated_at: string;
 }
 
+interface Child {
+  name: string;
+}
+
 // Interface for family information
 export interface IFamilyInfo {
   id: number;
@@ -38,7 +42,7 @@ export interface IFamilyInfo {
   father_status?: string | null;
   mother_name?: string | null;
   mother_status?: string | null;
-  children: unknown[]; // You may want to define a more specific type for children
+  children: Child[]; // You may want to define a more specific type for children
   created_at: string;
   updated_at: string;
 }
@@ -66,10 +70,10 @@ export interface IEmergencyContact {
 }
 
 // Interface for medical condition
-export interface IMedicalCondition {
+export interface IParMedicalCondition {
   id: number;
   condition: string;
-  details?: string | null;
+  notes?: string | null;
   parishioner_id: number;
   created_at: string;
   updated_at: string;
@@ -100,7 +104,7 @@ export interface IDetailedParishioner extends IParishioner {
   family_info: IFamilyInfo;
   occupation?: IOccupation;
   emergency_contacts: IEmergencyContact[];
-  medical_conditions: IMedicalCondition[];
+  medical_conditions: IParMedicalCondition[];
   sacraments: IParSacrament[];
   skills: IParSkill[];
 }
