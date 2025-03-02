@@ -88,7 +88,7 @@ export interface ISacrament {
 }
 
 // Interface for skill
-export interface ISkill {
+export interface IParSkill {
   id: number;
   name: string;
   created_at: string;
@@ -102,7 +102,7 @@ export interface IDetailedParishioner extends IParishioner {
   emergency_contacts: IEmergencyContact[];
   medical_conditions: IMedicalCondition[];
   sacraments: ISacrament[];
-  skills: ISkill[];
+  skills: IParSkill[];
 }
 
 const actionColumn: ColDef<IParishioner> = {

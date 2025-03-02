@@ -35,6 +35,7 @@ export default function MemberDetailsView() {
     async ({ refresh = false } = {}) => {
       setIsLoading(true);
       setError(null);
+      // setMember(null);
 
       try {
         const response = await fetch(`/api/v1/parishioners/${parishionerId}`, {
@@ -171,8 +172,8 @@ export default function MemberDetailsView() {
 
           {/* Skills Card */}
           <SkillsCard
-          // skills={member.skills}
-          // refetch={() => fetchParishioner({ refresh: true })}
+            parishioner={member}
+            refetch={() => fetchParishioner({ refresh: true })}
           />
 
           <div className="h-[2vh]" />
