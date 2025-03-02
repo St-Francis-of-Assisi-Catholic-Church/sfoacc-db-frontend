@@ -154,8 +154,8 @@ export default function MemberDetailsView() {
 
           {/* medical conditio cards */}
           <MedicalConditionsCard
-          // conditions={member.medical_conditions}
-          // refetch={() => fetchParishioner({ refresh: true })}
+            parishioner={member}
+            refetch={() => fetchParishioner({ refresh: true })}
           />
 
           {/* Sacraments Card */}

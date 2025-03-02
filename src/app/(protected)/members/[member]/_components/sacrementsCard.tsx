@@ -54,9 +54,6 @@ export default function SacrementsCard({ parishioner, refetch }: Props) {
     refetch(); // Call refetch after updating sacraments
   };
 
-  console.log("sacrements ->", sacraments);
-  console.info("sac", parishioner.sacraments);
-
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
