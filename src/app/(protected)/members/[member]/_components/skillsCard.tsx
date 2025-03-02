@@ -10,6 +10,7 @@ import {
 } from "../../_components/member-columns";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
+import Banner from "@/components/ui/banner";
 
 interface Props {
   parishioner: IDetailedParishioner;
@@ -178,6 +179,11 @@ function UpdateSkillsModal({
     >
       <div className="px-6 py-4 overflow-auto h-[40vh]">
         <div className="space-y-4">
+          <Banner
+            variant={"info"}
+            title="Quick notice"
+            description="Type the skill below and press either the 'Enter' or 'Comma' key to add it to the list"
+          />
           <div className="flex flex-col space-y-2">
             <Input
               placeholder="Type a skill and press Enter"
