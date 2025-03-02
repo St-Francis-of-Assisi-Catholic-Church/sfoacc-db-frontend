@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import BaseModal from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Pencil, Plus } from "lucide-react";
+import { FilePenLine, Pencil, Plus, Trash2 } from "lucide-react";
+import Banner from "@/components/ui/banner";
 import {
   Table,
   TableBody,
@@ -12,50 +13,45 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { IDetailedParishioner } from "../../_components/member-columns";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
-const CATHOLIC_SACRAMENTS = {
-  Baptism: "Baptism",
-  "First Communion": "First Holy Communion",
-  Confirmation: "Confirmation",
-  Penance: "Penance (Confession)",
-  Anointing: "Anointing of the Sick",
-  "Holy Orders": "Holy Orders",
-  Matrimony: "Holy Matrimony",
-} as const;
+interface Props {
+  parishioner: IDetailedParishioner;
+  refetch: () => void;
+}
 
-type CatholicSacrament = keyof typeof CATHOLIC_SACRAMENTS;
-
-interface Sacrament {
-  type: CatholicSacrament;
+export interface IParSacrament {
+  id?: number;
+  type: string;
   date: string;
   place: string;
   minister: string;
+  parishioner_id: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
-export default function SacrementsCard() {
-  const [sacraments, setSacraments] = useState<Sacrament[]>([
-    {
-      type: "Baptism",
-      date: "2000-03-15",
-      place: "St. Francis of Assisi Catholic Church",
-      minister: "Rev. Fr. James Brown",
-    },
-    {
-      type: "First Communion",
-      date: "2008-06-22",
-      place: "St. Francis of Assisi Catholic Church",
-      minister: "Rev. Fr. Peter Smith",
-    },
-    {
-      type: "Confirmation",
-      date: "2010-08-30",
-      place: "St. Francis of Assisi Catholic Church",
-      minister: "Most Rev. John Doe",
-    },
-  ]);
+// This maps from display names to API expected values
+const CATHOLIC_SACRAMENTS = {
+  Baptism: "Baptism",
+  "First Holy Communion": "First Holy Communion",
+  Confirmation: "Confirmation",
+  Penance: "Penance",
+  "Anointing of the Sick": "Anointing of the Sick",
+  "Holy Orders": "Holy Orders",
+  "Holy Matrimony": "Holy Matrimony",
+} as const;
 
-  const handleUpdateSacraments = (newSacraments: Sacrament[]) => {
+export default function SacrementsCard({ parishioner, refetch }: Props) {
+  const [sacraments, setSacraments] = useState<IParSacrament[]>(
+    parishioner.sacraments || []
+  );
+
+  const handleUpdateSacraments = (newSacraments: IParSacrament[]) => {
     setSacraments(newSacraments);
+    refetch(); // Call refetch after updating sacraments
   };
 
   return (
@@ -63,6 +59,7 @@ export default function SacrementsCard() {
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Sacraments</CardTitle>
         <UpdateSacramentsModal
+          parishionerId={parishioner.id}
           currentSacraments={sacraments}
           onUpdate={handleUpdateSacraments}
         />
@@ -78,18 +75,33 @@ export default function SacrementsCard() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sacraments.map((sacrament, index) => (
-              <TableRow key={index}>
-                <TableCell className="font-medium">
-                  {CATHOLIC_SACRAMENTS[sacrament.type]}
+            {sacraments.length > 0 ? (
+              sacraments.map((sacrament, index) => (
+                <TableRow key={index}>
+                  <TableCell className="font-medium">
+                    {
+                      CATHOLIC_SACRAMENTS[
+                        sacrament.type as keyof typeof CATHOLIC_SACRAMENTS
+                      ]
+                    }
+                  </TableCell>
+                  <TableCell>
+                    {new Date(sacrament.date).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>{sacrament.place}</TableCell>
+                  <TableCell>{sacrament.minister}</TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={4}
+                  className="text-center py-4 text-muted-foreground"
+                >
+                  No sacraments recorded yet.
                 </TableCell>
-                <TableCell>
-                  {new Date(sacrament.date).toLocaleDateString()}
-                </TableCell>
-                <TableCell>{sacrament.place}</TableCell>
-                <TableCell>{sacrament.minister}</TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </CardContent>
@@ -98,23 +110,29 @@ export default function SacrementsCard() {
 }
 
 interface UpdateSacramentsModalProps {
-  currentSacraments: Sacrament[];
-  onUpdate: (sacraments: Sacrament[]) => void;
+  parishionerId: number;
+  currentSacraments: IParSacrament[];
+  onUpdate: (sacraments: IParSacrament[]) => void;
 }
 
 function UpdateSacramentsModal({
+  parishionerId,
   currentSacraments,
   onUpdate,
 }: UpdateSacramentsModalProps) {
+  const { data: session } = useSession();
   const [localSacraments, setLocalSacraments] =
-    useState<Sacrament[]>(currentSacraments);
+    useState<IParSacrament[]>(currentSacraments);
   const [isLoading, setIsLoading] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [currentSacrament, setCurrentSacrament] = useState<Sacrament>({
+  const [error, setError] = useState<string>();
+  const [success, setSuccess] = useState<string>();
+  const [currentSacrament, setCurrentSacrament] = useState<IParSacrament>({
     type: "Baptism",
     date: "",
     place: "",
     minister: "",
+    parishioner_id: parishionerId,
   });
 
   const handleInputChange = (
@@ -123,7 +141,7 @@ function UpdateSacramentsModal({
     const { name, value } = e.target;
     setCurrentSacrament((prev) => ({
       ...prev,
-      [name]: value as unknown,
+      [name]: value,
     }));
   };
 
@@ -145,6 +163,7 @@ function UpdateSacramentsModal({
       date: "",
       place: "",
       minister: "",
+      parishioner_id: parishionerId,
     });
   };
 
@@ -160,18 +179,55 @@ function UpdateSacramentsModal({
   const handleSave = async () => {
     try {
       setIsLoading(true);
-      // TODO: Add API call here
-      // const response = await fetch('/api/member/sacraments', {
-      //   method: 'PUT',
-      //   body: JSON.stringify({ sacraments: localSacraments })
-      // });
+      setError(undefined);
+      setSuccess(undefined);
 
-      // Simulating API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const apiUrl = `/api/v1/parishioners/${parishionerId}/sacraments/batch`;
+      const accessToken = session?.accessToken;
 
-      onUpdate(localSacraments);
-    } catch (error) {
+      // Convert the sacrament types to the API expected values
+      const preparedSacraments = localSacraments.map(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        ({ id, created_at, updated_at, parishioner_id, ...rest }) => ({
+          ...rest,
+        })
+      );
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(preparedSacraments),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.detail === "Validation Error" && data.errors) {
+          // Format validation errors
+          const errorMessage = data.errors
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .map((err: any) => `${err.msg} at ${err.loc.join(".")}`)
+            .join(", ");
+          throw new Error(errorMessage);
+        } else {
+          throw new Error(data.detail || "Failed to save sacraments");
+        }
+      }
+
+      // API returns all sacraments for the user
+      onUpdate(data.data);
+      toast.success(data.message);
+      setSuccess(
+        data.message || "Sacrements added for parishioner successfully"
+      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       console.error("Failed to save sacraments:", error);
+      setError(error.message || "An error occurred while saving sacraments");
     } finally {
       setIsLoading(false);
     }
@@ -184,8 +240,11 @@ function UpdateSacramentsModal({
       date: "",
       place: "",
       minister: "",
+      parishioner_id: parishionerId,
     });
     setEditingIndex(null);
+    setError(undefined);
+    setSuccess(undefined);
   };
 
   return (
@@ -204,6 +263,28 @@ function UpdateSacramentsModal({
       onCloseModal={handleCancel}
     >
       <div className="px-6 py-4 overflow-auto h-[60vh]">
+        <Banner
+          className="mb-4"
+          variant={"info"}
+          title="Notice"
+          description={
+            "A parishioner can have only one sacrement type. All fields are required"
+          }
+        />
+        <Banner
+          className="mb-4"
+          variant={"success"}
+          title="Success"
+          description={success}
+        />
+        {error && (
+          <Banner
+            className="mb-4"
+            variant="error"
+            title="Error Saving Sacraments"
+            description={error}
+          />
+        )}
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-4">
             <div className="flex flex-col space-y-2">
@@ -294,47 +375,57 @@ function UpdateSacramentsModal({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {localSacraments.map((sacrament, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">
-                      {CATHOLIC_SACRAMENTS[sacrament.type]}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(sacrament.date).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>{sacrament.place}</TableCell>
-                    <TableCell>{sacrament.minister}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEditSacrament(index)}
-                          disabled={isLoading}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveSacrament(index)}
-                          disabled={isLoading}
-                        >
-                          Remove
-                        </Button>
-                      </div>
+                {localSacraments.length > 0 ? (
+                  localSacraments.map((sacrament, index) => (
+                    <TableRow key={index}>
+                      <TableCell className="font-medium">
+                        {/* {
+                          CATHOLIC_SACRAMENTS[
+                            sacrament.type as keyof typeof CATHOLIC_SACRAMENTS
+                          ]
+                        } */}
+                        {sacrament.type}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(sacrament.date).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>{sacrament.place}</TableCell>
+                      <TableCell>{sacrament.minister}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size={"icon"}
+                            onClick={() => handleEditSacrament(index)}
+                            disabled={isLoading}
+                          >
+                            <FilePenLine className="h-4 w-5 text-green-700" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size={"icon"}
+                            onClick={() => handleRemoveSacrament(index)}
+                            disabled={isLoading}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="text-center py-4 text-muted-foreground"
+                    >
+                      No sacraments recorded yet. Use the form above to add
+                      sacraments.
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
-
-            {localSacraments.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No sacraments recorded yet. Use the form above to add
-                sacraments.
-              </p>
-            )}
           </div>
         </div>
       </div>

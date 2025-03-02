@@ -35,6 +35,7 @@ export default function MemberDetailsView() {
     async ({ refresh = false } = {}) => {
       setIsLoading(true);
       setError(null);
+      // setMember(null);
 
       try {
         const response = await fetch(`/api/v1/parishioners/${parishionerId}`, {
@@ -141,29 +142,30 @@ export default function MemberDetailsView() {
 
           {/* family background */}
           <FamilyBackgroundCard
-          // parishioner={member}
-          // refetch={() => fetchParishioner({ refresh: true })}
+            parishioner={member}
+            refetch={() => fetchParishioner({ refresh: true })}
           />
 
           {/* emergency contact card */}
           <EmergencyContactCard
-          // contacts={member.emergency_contacts}
-          // refetch={() => fetchParishioner({ refresh: true })}
+            parishioner={member}
+            refetch={() => fetchParishioner({ refresh: true })}
           />
 
-          {/* medical conditio cards */}
+          {/* medical conditions cards */}
           <MedicalConditionsCard
-          // conditions={member.medical_conditions}
-          // refetch={() => fetchParishioner({ refresh: true })}
+            parishioner={member}
+            refetch={() => fetchParishioner({ refresh: true })}
           />
 
           {/* Sacraments Card */}
           <SacrementsCard
-          // sacraments={member.sacraments}
-          // refetch={() => fetchParishioner({ refresh: true })}
+            parishioner={member}
+            refetch={() => fetchParishioner({ refresh: true })}
           />
 
           {/* Societal Memberships Card */}
+          {/* TODO */}
           <SocietalMembershipsCard
           // member={member}
           // refetch={() => fetchParishioner({ refresh: true })}
@@ -171,8 +173,8 @@ export default function MemberDetailsView() {
 
           {/* Skills Card */}
           <SkillsCard
-          // skills={member.skills}
-          // refetch={() => fetchParishioner({ refresh: true })}
+            parishioner={member}
+            refetch={() => fetchParishioner({ refresh: true })}
           />
 
           <div className="h-[2vh]" />

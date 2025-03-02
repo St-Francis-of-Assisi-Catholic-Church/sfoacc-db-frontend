@@ -4,7 +4,7 @@ import BaseModal from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Pencil, Plus } from "lucide-react";
+import { FilePenLine, Pencil, Plus, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -13,30 +13,33 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { IDetailedParishioner } from "../../_components/member-columns";
+import Banner from "@/components/ui/banner";
+import { toast } from "sonner";
+import { useSession } from "next-auth/react";
 
-interface MedicalCondition {
-  condition: string;
-  notes: string;
+interface Props {
+  parishioner: IDetailedParishioner;
+  refetch: () => void;
 }
 
-export default function MedicalConditionsCard() {
-  const [conditions, setConditions] = useState<MedicalCondition[]>([
-    {
-      condition: "Type 2 Diabetes",
-      notes: "",
-    },
-    {
-      condition: "Hypertension",
-      notes: "Regular blood pressure monitoring required",
-    },
-    {
-      condition: "Asthma",
-      notes: "Exercise-induced, carries inhaler when needed",
-    },
-  ]);
+interface MedicalCondition {
+  id?: number;
+  condition: string;
+  notes?: string | null;
+  parishioner_id?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export default function MedicalConditionsCard({ parishioner, refetch }: Props) {
+  const [conditions, setConditions] = useState<MedicalCondition[]>(
+    parishioner.medical_conditions || []
+  );
 
   const handleUpdateConditions = (newConditions: MedicalCondition[]) => {
     setConditions(newConditions);
+    refetch();
   };
 
   return (
@@ -46,6 +49,7 @@ export default function MedicalConditionsCard() {
         <UpdateConditionsModal
           currentConditions={conditions}
           onUpdate={handleUpdateConditions}
+          parishionerId={parishioner.id}
         />
       </CardHeader>
       <CardContent>
@@ -88,15 +92,21 @@ export default function MedicalConditionsCard() {
 interface UpdateConditionsModalProps {
   currentConditions: MedicalCondition[];
   onUpdate: (conditions: MedicalCondition[]) => void;
+  parishionerId: number;
 }
 
 function UpdateConditionsModal({
   currentConditions,
   onUpdate,
+
+  parishionerId,
 }: UpdateConditionsModalProps) {
+  const { data: session } = useSession();
   const [localConditions, setLocalConditions] =
     useState<MedicalCondition[]>(currentConditions);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string>();
+  const [success, setSuccess] = useState<string>();
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [currentCondition, setCurrentCondition] = useState<MedicalCondition>({
     condition: "",
@@ -144,18 +154,48 @@ function UpdateConditionsModal({
   const handleSave = async () => {
     try {
       setIsLoading(true);
-      // TODO: Add API call here
-      // const response = await fetch('/api/member/medical-conditions', {
-      //   method: 'PUT',
-      //   body: JSON.stringify({ conditions: localConditions })
-      // });
+      setSuccess(undefined);
+      setError(undefined);
+      const accessToken = session?.accessToken;
+      //
+      const response = await fetch(
+        `/api/v1/parishioners/${parishionerId}/medical-conditions/batch`,
+        {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(localConditions),
+        }
+      );
 
-      // Simulating API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (!response.ok) {
+        const info = await response.json();
+        if (info.detail) {
+          throw new Error(info.detail);
+        } else throw new Error("Failed to update medical condition");
+      }
 
-      onUpdate(localConditions);
-    } catch (error) {
+      const result = await response.json();
+
+      console.log("Result", result);
+
+      console.log("medic", result.data);
+      onUpdate(result.data);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       console.error("Failed to save medical conditions:", error);
+      setError(
+        error.message ||
+          "An error occured while trying to update medical condition"
+      );
+
+      toast.error(
+        error.message ||
+          "An error occured while trying update medical condition"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -187,6 +227,25 @@ function UpdateConditionsModal({
     >
       <div className="px-6 py-4 overflow-auto h-[60vh]">
         <div className="space-y-4">
+          <Banner
+            className="mb-4"
+            variant="info"
+            title="Quick Notice"
+            description="Please add medical condition here and click on 'Add Condition'  then preview and click on 'Save' to save it"
+          />
+
+          <Banner
+            variant="error"
+            className="mb-4"
+            title="Error"
+            description={error}
+          />
+          <Banner
+            variant="success"
+            className="mb-4"
+            title="Success"
+            description={success}
+          />
           <div className="grid grid-cols-1 gap-4">
             <div className="flex flex-col space-y-2">
               <label htmlFor="condition" className="text-sm font-medium">
@@ -210,7 +269,7 @@ function UpdateConditionsModal({
                 id="notes"
                 placeholder="Add any relevant notes"
                 name="notes"
-                value={currentCondition.notes}
+                value={currentCondition.notes!}
                 onChange={handleInputChange}
                 disabled={isLoading}
               />
@@ -247,19 +306,19 @@ function UpdateConditionsModal({
                       <div className="flex gap-2">
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size={"icon"}
                           onClick={() => handleEditCondition(index)}
                           disabled={isLoading}
                         >
-                          Edit
+                          <FilePenLine className="h-4 w-5 text-green-700" />
                         </Button>
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size={"icon"}
                           onClick={() => handleRemoveCondition(index)}
                           disabled={isLoading}
                         >
-                          Remove
+                          <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
                     </TableCell>
