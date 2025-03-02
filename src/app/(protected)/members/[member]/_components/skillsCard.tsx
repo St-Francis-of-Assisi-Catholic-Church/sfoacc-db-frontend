@@ -134,7 +134,6 @@ function UpdateSkillsModal({
 
       // Get the updated skills from the response
       const updatedSkills = await response.json();
-      console.log("u", updatedSkills.data);
 
       // Success message
       toast.success("Skills updated successfully");
