@@ -125,8 +125,9 @@ const UserTable = () => {
           );
         }
 
-        const data = await response.json();
-        setRowData(data);
+        const result = await response.json();
+        console.log("response", result);
+        setRowData(result.data);
 
         if (gridRef.current?.api) {
           gridRef.current.api.sizeColumnsToFit();

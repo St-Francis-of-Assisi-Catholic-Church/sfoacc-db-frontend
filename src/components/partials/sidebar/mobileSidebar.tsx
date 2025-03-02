@@ -54,7 +54,10 @@ export default function MobileSidebar() {
                 <SidebarNavItem item={item} />
               </div>
             ))} */}
-
+            {sideBarNavs.map((item, index) => (
+              <SidebarNavItem key={item.title + index} item={item} />
+            ))}
+            {/* 
             {sideBarNavs.map((item, index) =>
               item.isHeader ? (
                 <div key={item.title + index} className="pt-4">
@@ -65,7 +68,7 @@ export default function MobileSidebar() {
                   <SidebarNavItem item={item} />
                 </div>
               )
-            )}
+            )} */}
           </nav>
         </ScrollArea>
       </SheetContent>
