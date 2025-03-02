@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -8,6 +9,7 @@ import { IContactInfo } from "./contactInfo";
 import { IOccupationInfo } from "./occuptionInfo";
 import { IEmergencyInfo } from "./emergencyInfo";
 import { useSession } from "next-auth/react";
+import Banner from "@/components/ui/banner";
 
 // Define a type for all the combined data
 interface ReviewProps {
@@ -39,12 +41,27 @@ const ReviewStep: React.FC<ReviewProps> = ({
   const [showDevInfo, setShowDevInfo] = React.useState(
     process.env.NODE_ENV === "development"
   );
+  const [apiError, setApiError] = useState<any>(null);
+  const [success, setSuccess] = useState<string>();
+
+  // Helper function to remove empty values from an object
+  const removeEmptyValues = (obj: Record<string, any>) => {
+    const result: Record<string, any> = {};
+
+    Object.entries(obj).forEach(([key, value]) => {
+      // Only include values that aren't empty strings, null, or undefined
+      if (value !== "" && value !== null && value !== undefined) {
+        result[key] = value;
+      }
+    });
+
+    return result;
+  };
 
   // Helper function to map our form data to the API format
   const mapFormDataToApiFormat = () => {
-    return {
-      //   old_church_id: "", // Add this field if available
-      //   new_church_id: "", // Add this field if available
+    // First create the complete object
+    const formData = {
       first_name: personalInfo.firstName,
       other_names: personalInfo.otherNames,
       last_name: personalInfo.lastName,
@@ -60,11 +77,17 @@ const ReviewStep: React.FC<ReviewProps> = ({
       whatsapp_number: contactInfo.whatsAppNumber,
       email_address: contactInfo.emaillAddress,
     };
+
+    // Then remove any empty values
+    return removeEmptyValues(formData);
   };
 
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true);
+      setApiError(null);
+      setSuccess(undefined);
+
       const accessToken = session?.accessToken;
 
       // Format data according to the API requirements
@@ -81,37 +104,34 @@ const ReviewStep: React.FC<ReviewProps> = ({
         body: JSON.stringify(formattedData),
       });
 
+      // Parse the JSON response only once
+      const responseData = await response.json();
+      console.log("Response:", responseData);
+
       if (!response.ok) {
-        let errorMessage = "Failed to create member";
-
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.detail || errorMessage;
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (e) {
-          // If parsing JSON fails, use status text
-          errorMessage = `${response.status}: ${response.statusText}`;
-        }
-
-        throw new Error(errorMessage);
+        // Set the API error directly from the already parsed response
+        setApiError(responseData);
+        throw new Error(responseData.detail || "Failed to create member");
       }
-
-      const result = await response.json();
-
-      console.log("Res", result);
 
       // Show success message
       toast.success("Member created successfully!");
+      setSuccess("Parishioner created successfully");
 
       // Redirect to members list or clear form
       // You might want to add a redirect here
     } catch (error) {
       console.error("Error creating member:", error);
-      toast.error("Failed to create member. Please try again.");
+      // Only show toast if we don't have structured API errors
+      if (!apiError) {
+        toast.error("Failed to create member. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  console.log("error", apiError);
 
   // Determine if we can submit based on required steps
   const canSubmit = completedSteps.includes(1); // Personal info is required
@@ -148,13 +168,54 @@ const ReviewStep: React.FC<ReviewProps> = ({
   };
 
   return (
-    <div className="space-y-6 overflow-auto max-h-full pb-20">
+    <div className="space-y-6 overflow-auto max-h-full pb-20 pr-2">
       <div className="space-y-2">
         <h2 className="text-2xl font-bold">Review & Submit</h2>
         <p className="text-muted-foreground">
           Please review the information you&apos;ve provided before submitting.
         </p>
       </div>
+
+      {/* Display API validation errors if any */}
+      {apiError && (
+        <div className="bg-red-50 p-4 rounded-md border border-red-200 text-red-800 mb-4">
+          <h3 className="font-medium">
+            {apiError.detail || "Error creating member"}
+          </h3>
+          {apiError.errors && (
+            <div className="mt-2">
+              <ul className="list-disc pl-5 space-y-2">
+                {apiError.errors.map((error: any, index: number) => (
+                  <li key={index} className="text-sm">
+                    <span className="font-semibold">
+                      {error.loc[error.loc.length - 1]}
+                    </span>
+                    : {error.msg}
+                    {error.input && (
+                      <div className="mt-1 text-xs font-mono bg-red-100 p-2 rounded">
+                        Submitted: {JSON.stringify(error.input, null, 2)}
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      <Banner
+        variant="info"
+        title="Quick Notice"
+        description="Please visit the all parishioners page to update the parishioner record"
+      />
+
+      <Banner
+        variant="success"
+        className="mb-4"
+        title="Success"
+        description={success}
+      />
 
       {renderSection(
         "Personal Information",
