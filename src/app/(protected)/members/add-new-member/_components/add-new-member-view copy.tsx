@@ -12,7 +12,6 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { saveStateDataHandler } from "./utils";
 import OccuptionInfoStep, { IOccupationInfo } from "./steps/occuptionInfo";
 import EmergencyInfoStep, { IEmergencyInfo } from "./steps/emergencyInfo";
-import ReviewStep from "./steps/review";
 
 function AddNewMemberView() {
   const { collapsed } = useSidebar();
@@ -186,18 +185,6 @@ function AddNewMemberView() {
             )}
             onBack={goBack}
             onSkip={skip}
-          />
-        );
-
-      case 10:
-        return (
-          <ReviewStep
-            personalInfo={personalInfo}
-            contactInfo={contactInfo}
-            occupationInfo={occupationInfo}
-            emergencyInfo={emergencyInfo}
-            onBack={goBack}
-            completedSteps={completedSteps}
           />
         );
 

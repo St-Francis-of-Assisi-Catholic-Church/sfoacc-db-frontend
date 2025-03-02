@@ -81,7 +81,7 @@ export default function PersonalInformationCard({
               <label className="text-sm font-medium text-muted-foreground">
                 Maiden Name
               </label>
-              <p>{personalInfo.maidenName || "Not provided"}</p>
+              <p>{personalInfo.maidenName || "-"}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">
@@ -104,14 +104,14 @@ export default function PersonalInformationCard({
               <label className="text-sm font-medium text-muted-foreground">
                 Place of Birth
               </label>
-              <p>{personalInfo.placeOfBirth || "Not provided"}</p>
+              <p>{personalInfo.placeOfBirth || "-"}</p>
             </div>
 
             <div>
               <label className="text-sm font-medium text-muted-foreground">
                 Place of Worship
               </label>
-              <p>{personalInfo.place_of_worship || "Not provided"}</p>
+              <p>{personalInfo.place_of_worship || "-"}</p>
             </div>
           </div>
           <div className="space-y-4">
@@ -119,19 +119,19 @@ export default function PersonalInformationCard({
               <label className="text-sm font-medium text-muted-foreground">
                 Hometown
               </label>
-              <p>{personalInfo.hometown || "Not provided"}</p>
+              <p>{personalInfo.hometown || "-"}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">
                 Region
               </label>
-              <p>{personalInfo.region || "Not provided"}</p>
+              <p>{personalInfo.region || "-"}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">
                 Country
               </label>
-              <p>{personalInfo.country || "Not provided"}</p>
+              <p>{personalInfo.country || "-"}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">
@@ -141,7 +141,7 @@ export default function PersonalInformationCard({
                 {personalInfo.maritalStatus
                   ? personalInfo.maritalStatus.charAt(0).toUpperCase() +
                     personalInfo.maritalStatus.slice(1)
-                  : "Not provided"}
+                  : "-"}
               </p>
             </div>
 
@@ -149,7 +149,7 @@ export default function PersonalInformationCard({
               <label className="text-sm font-medium text-muted-foreground">
                 Current Residence
               </label>
-              <p>{personalInfo.current_residence || "Not provided"}</p>
+              <p>{personalInfo.current_residence || "-"}</p>
             </div>
           </div>
         </div>
