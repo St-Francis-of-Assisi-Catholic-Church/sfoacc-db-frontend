@@ -148,8 +148,8 @@ export default function MemberDetailsView() {
 
           {/* emergency contact card */}
           <EmergencyContactCard
-          // contacts={member.emergency_contacts}
-          // refetch={() => fetchParishioner({ refresh: true })}
+            parishioner={member}
+            refetch={() => fetchParishioner({ refresh: true })}
           />
 
           {/* medical conditio cards */}
@@ -160,8 +160,8 @@ export default function MemberDetailsView() {
 
           {/* Sacraments Card */}
           <SacrementsCard
-          // sacraments={member.sacraments}
-          // refetch={() => fetchParishioner({ refresh: true })}
+            parishioner={member}
+            refetch={() => fetchParishioner({ refresh: true })}
           />
 
           {/* Societal Memberships Card */}

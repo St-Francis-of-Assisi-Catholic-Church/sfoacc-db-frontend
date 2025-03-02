@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import BaseModal from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
@@ -12,32 +12,38 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { IDetailedParishioner } from "../../_components/member-columns";
+import { useSession } from "next-auth/react";
+import Banner from "@/components/ui/banner";
 
-interface EmergencyContact {
-  name: string;
-  relationship: string;
-  primaryPhone: string;
-  alternativePhone: string;
+interface Props {
+  parishioner: IDetailedParishioner;
+  refetch: () => void;
 }
 
-export default function EmergencyContactCard() {
-  const [contacts, setContacts] = useState<EmergencyContact[]>([
-    {
-      name: "Jane Doe",
-      relationship: "Spouse",
-      primaryPhone: "+233 24 765 4321",
-      alternativePhone: "+233 24 765 4322",
-    },
-    {
-      name: "Robert Smith",
-      relationship: "Brother",
-      primaryPhone: "+233 24 555 8888",
-      alternativePhone: "+233 24 555 8889",
-    },
-  ]);
+export interface IEmergencyContact {
+  id?: number;
+  name: string;
+  relationship: string;
+  primary_phone: string;
+  alternative_phone?: string | null;
+  parishioner_id?: number;
+  created_at?: string;
+  updated_at?: string;
+}
 
-  const handleUpdateContacts = (newContacts: EmergencyContact[]) => {
+export default function EmergencyContactCard({ parishioner, refetch }: Props) {
+  const [contacts, setContacts] = useState<IEmergencyContact[]>(
+    parishioner.emergency_contacts || []
+  );
+
+  useEffect(() => {
+    setContacts(parishioner.emergency_contacts || []);
+  }, [parishioner]);
+
+  const handleUpdateContacts = (newContacts: IEmergencyContact[]) => {
     setContacts(newContacts);
+    refetch(); // Call refetch to update the parent component with new data
   };
 
   return (
@@ -47,6 +53,7 @@ export default function EmergencyContactCard() {
         <UpdateContactsModal
           currentContacts={contacts}
           onUpdate={handleUpdateContacts}
+          parishionerId={parishioner.id}
         />
       </CardHeader>
       <CardContent>
@@ -68,8 +75,8 @@ export default function EmergencyContactCard() {
                       {contact.name}
                     </TableCell>
                     <TableCell>{contact.relationship}</TableCell>
-                    <TableCell>{contact.primaryPhone}</TableCell>
-                    <TableCell>{contact.alternativePhone}</TableCell>
+                    <TableCell>{contact.primary_phone}</TableCell>
+                    <TableCell>{contact.alternative_phone}</TableCell>
                   </TableRow>
                 ))
               ) : (
@@ -91,24 +98,32 @@ export default function EmergencyContactCard() {
 }
 
 interface UpdateContactsModalProps {
-  currentContacts: EmergencyContact[];
-  onUpdate: (contacts: EmergencyContact[]) => void;
+  currentContacts: IEmergencyContact[];
+  onUpdate: (contacts: IEmergencyContact[]) => void;
+  parishionerId: number;
 }
 
 function UpdateContactsModal({
   currentContacts,
   onUpdate,
+  parishionerId,
 }: UpdateContactsModalProps) {
+  const { data: session } = useSession();
   const [localContacts, setLocalContacts] =
-    useState<EmergencyContact[]>(currentContacts);
+    useState<IEmergencyContact[]>(currentContacts);
   const [isLoading, setIsLoading] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [currentContact, setCurrentContact] = useState<EmergencyContact>({
+  const [currentContact, setCurrentContact] = useState<IEmergencyContact>({
     name: "",
     relationship: "",
-    primaryPhone: "",
-    alternativePhone: "",
+    primary_phone: "",
+    alternative_phone: "",
   });
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLocalContacts(currentContacts);
+  }, [currentContacts]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -134,8 +149,8 @@ function UpdateContactsModal({
     setCurrentContact({
       name: "",
       relationship: "",
-      primaryPhone: "",
-      alternativePhone: "",
+      primary_phone: "",
+      alternative_phone: "",
     });
   };
 
@@ -151,16 +166,37 @@ function UpdateContactsModal({
   const handleSave = async () => {
     try {
       setIsLoading(true);
-      // TODO: Add API call here
-      // const response = await fetch('/api/member/emergency-contacts', {
-      //   method: 'PUT',
-      //   body: JSON.stringify({ contacts: localContacts })
-      // });
+      const accessToken = session?.accessToken;
 
-      // Simulating API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Format contacts for API
+      const contactsForApi = localContacts.map((contact) => ({
+        name: contact.name,
+        relationship: contact.relationship,
+        primary_phone: contact.primary_phone,
+        alternative_phone: contact.alternative_phone || "",
+      }));
 
-      onUpdate(localContacts);
+      // Call the API to update emergency contacts
+      const response = await fetch(
+        `/api/v1/parishioners/${parishionerId}/emergency-contacts/batch`,
+        {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(contactsForApi),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update emergency contacts");
+      }
+
+      const result = await response.json();
+      setSuccessMsg(result.message);
+      onUpdate(result.data); // Update with the response from the server
     } catch (error) {
       console.error("Failed to save emergency contacts:", error);
     } finally {
@@ -173,8 +209,8 @@ function UpdateContactsModal({
     setCurrentContact({
       name: "",
       relationship: "",
-      primaryPhone: "",
-      alternativePhone: "",
+      primary_phone: "",
+      alternative_phone: "",
     });
     setEditingIndex(null);
   };
@@ -196,6 +232,7 @@ function UpdateContactsModal({
     >
       <div className="px-6 py-4 overflow-auto h-[60vh]">
         <div className="space-y-4">
+          <Banner variant={"success"} description={successMsg || undefined} />
           <div className="grid grid-cols-1 gap-4">
             <div className="flex flex-col space-y-2">
               <label htmlFor="name" className="text-sm font-medium">
@@ -226,28 +263,31 @@ function UpdateContactsModal({
             </div>
 
             <div className="flex flex-col space-y-2">
-              <label htmlFor="primaryPhone" className="text-sm font-medium">
+              <label htmlFor="primary_phone" className="text-sm font-medium">
                 Primary Phone
               </label>
               <Input
-                id="primaryPhone"
+                id="primary_phone"
                 placeholder="Primary phone number"
-                name="primaryPhone"
-                value={currentContact.primaryPhone}
+                name="primary_phone"
+                value={currentContact.primary_phone}
                 onChange={handleInputChange}
                 disabled={isLoading}
               />
             </div>
 
             <div className="flex flex-col space-y-2">
-              <label htmlFor="alternativePhone" className="text-sm font-medium">
+              <label
+                htmlFor="alternative_phone"
+                className="text-sm font-medium"
+              >
                 Alternative Phone
               </label>
               <Input
-                id="alternativePhone"
+                id="alternative_phone"
                 placeholder="Alternative phone number"
-                name="alternativePhone"
-                value={currentContact.alternativePhone}
+                name="alternative_phone"
+                value={currentContact.alternative_phone || ""}
                 onChange={handleInputChange}
                 disabled={isLoading}
               />
@@ -259,7 +299,7 @@ function UpdateContactsModal({
                 isLoading ||
                 !currentContact.name ||
                 !currentContact.relationship ||
-                !currentContact.primaryPhone
+                !currentContact.primary_phone
               }
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -285,8 +325,8 @@ function UpdateContactsModal({
                       {contact.name}
                     </TableCell>
                     <TableCell>{contact.relationship}</TableCell>
-                    <TableCell>{contact.primaryPhone}</TableCell>
-                    <TableCell>{contact.alternativePhone}</TableCell>
+                    <TableCell>{contact.primary_phone}</TableCell>
+                    <TableCell>{contact.alternative_phone}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
                         <Button

@@ -76,7 +76,7 @@ export interface IMedicalCondition {
 }
 
 // Interface for sacrament
-export interface ISacrament {
+export interface IParSacrament {
   id: number;
   type: string;
   date: string;
@@ -101,7 +101,7 @@ export interface IDetailedParishioner extends IParishioner {
   occupation?: IOccupation;
   emergency_contacts: IEmergencyContact[];
   medical_conditions: IMedicalCondition[];
-  sacraments: ISacrament[];
+  sacraments: IParSacrament[];
   skills: IParSkill[];
 }
 
