@@ -3,15 +3,15 @@ import { Button } from "@/components/ui/button";
 import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import PersonalInfoStep, { IPersonalInfo } from "./steps/personalInfo";
-import ContactInfoStep, { IContactInfo } from "./steps/contactInfo";
+import { IContactInfo } from "./steps/contactInfo";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/store";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
 import { saveStateDataHandler } from "./utils";
-import OccuptionInfoStep, { IOccupationInfo } from "./steps/occuptionInfo";
-import EmergencyInfoStep, { IEmergencyInfo } from "./steps/emergencyInfo";
+import { IOccupationInfo } from "./steps/occuptionInfo";
+import { IEmergencyInfo } from "./steps/emergencyInfo";
 import ReviewStep from "./steps/review";
 
 function AddNewMemberView() {
@@ -35,17 +35,17 @@ function AddNewMemberView() {
     country: "",
   });
 
-  const [contactInfo, setContactInfo] = useState<IContactInfo>({
+  const [contactInfo] = useState<IContactInfo>({
     mobileNumber: "",
     emaillAddress: "",
   });
 
-  const [occupationInfo, setOccupationInfo] = useState<IOccupationInfo>({
+  const [occupationInfo] = useState<IOccupationInfo>({
     role: "",
     employer: "",
   });
 
-  const [emergencyInfo, setEmergencyInfo] = useState<IEmergencyInfo>({
+  const [emergencyInfo] = useState<IEmergencyInfo>({
     name: "",
     relationship: "",
     primaryPhone: "",
@@ -141,53 +141,53 @@ function AddNewMemberView() {
           />
         );
 
-      case 2:
-        return (
-          <ContactInfoStep
-            data={contactInfo}
-            onSubmit={saveStateDataHandler<IContactInfo>(
-              2,
-              setContactInfo,
-              setCurrentStep,
-              setCompletedSteps,
-              completedSteps
-            )}
-            onBack={goBack}
-            onSkip={skip}
-          />
-        );
+      // case 2:
+      //   return (
+      //     <ContactInfoStep
+      //       data={contactInfo}
+      //       onSubmit={saveStateDataHandler<IContactInfo>(
+      //         2,
+      //         setContactInfo,
+      //         setCurrentStep,
+      //         setCompletedSteps,
+      //         completedSteps
+      //       )}
+      //       onBack={goBack}
+      //       onSkip={skip}
+      //     />
+      //   );
 
-      case 3:
-        return (
-          <OccuptionInfoStep
-            data={occupationInfo}
-            onSubmit={saveStateDataHandler<IOccupationInfo>(
-              3,
-              setOccupationInfo,
-              setCurrentStep,
-              setCompletedSteps,
-              completedSteps
-            )}
-            onBack={goBack}
-            onSkip={skip}
-          />
-        );
+      // case 3:
+      //   return (
+      //     <OccuptionInfoStep
+      //       data={occupationInfo}
+      //       onSubmit={saveStateDataHandler<IOccupationInfo>(
+      //         3,
+      //         setOccupationInfo,
+      //         setCurrentStep,
+      //         setCompletedSteps,
+      //         completedSteps
+      //       )}
+      //       onBack={goBack}
+      //       onSkip={skip}
+      //     />
+      //   );
 
-      case 5:
-        return (
-          <EmergencyInfoStep
-            data={emergencyInfo}
-            onSubmit={saveStateDataHandler<IEmergencyInfo>(
-              5,
-              setEmergencyInfo,
-              setCurrentStep,
-              setCompletedSteps,
-              completedSteps
-            )}
-            onBack={goBack}
-            onSkip={skip}
-          />
-        );
+      // case 5:
+      //   return (
+      //     <EmergencyInfoStep
+      //       data={emergencyInfo}
+      //       onSubmit={saveStateDataHandler<IEmergencyInfo>(
+      //         5,
+      //         setEmergencyInfo,
+      //         setCurrentStep,
+      //         setCompletedSteps,
+      //         completedSteps
+      //       )}
+      //       onBack={goBack}
+      //       onSkip={skip}
+      //     />
+      //   );
 
       case 10:
         return (
@@ -201,10 +201,35 @@ function AddNewMemberView() {
           />
         );
 
+      // Update the default case in renderStepContent function with a more informative UI
       default:
         return (
-          <div className="py-12 text-center text-muted-foreground">
-            This step is under development
+          <div className="py-12 flex flex-col items-center">
+            <div className="text-center mb-8">
+              <h3 className="text-lg font-medium mb-2">
+                Step Under Development
+              </h3>
+              <p className="text-muted-foreground">
+                This section is not yet available, but you can continue with the
+                information you&apos;ve already provided.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-4 w-full max-w-xs">
+              <Button onClick={() => goToStep(10)} className="w-full">
+                Skip to Review &amp; Submit
+              </Button>
+
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={goBack} className="flex-1">
+                  Back
+                </Button>
+
+                <Button variant="outline" onClick={skip} className="flex-1">
+                  Next Step
+                </Button>
+              </div>
+            </div>
           </div>
         );
     }
