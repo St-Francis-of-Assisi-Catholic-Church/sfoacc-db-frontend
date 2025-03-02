@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import BaseModal from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Pencil, Plus } from "lucide-react";
+import { FilePenLine, Pencil, Plus, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -120,6 +120,7 @@ function UpdateContactsModal({
     alternative_phone: "",
   });
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [error, setError] = useState<string>();
 
   useEffect(() => {
     setLocalContacts(currentContacts);
@@ -166,6 +167,7 @@ function UpdateContactsModal({
   const handleSave = async () => {
     try {
       setIsLoading(true);
+      setSuccessMsg(null);
       const accessToken = session?.accessToken;
 
       // Format contacts for API
@@ -191,14 +193,22 @@ function UpdateContactsModal({
       );
 
       if (!response.ok) {
-        throw new Error("Failed to update emergency contacts");
+        const info = await response.json();
+        if (info.detail) {
+          throw new Error(info.detail);
+        } else throw new Error("Failed to update emergency contacts");
       }
 
       const result = await response.json();
       setSuccessMsg(result.message);
       onUpdate(result.data); // Update with the response from the server
-    } catch (error) {
-      console.error("Failed to save emergency contacts:", error);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.log("Failed to save emergency contacts:", error);
+      setError(
+        error.message ||
+          "An error occured while trying to save emergency contacts"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -213,6 +223,7 @@ function UpdateContactsModal({
       alternative_phone: "",
     });
     setEditingIndex(null);
+    setSuccessMsg(null);
   };
 
   return (
@@ -232,7 +243,24 @@ function UpdateContactsModal({
     >
       <div className="px-6 py-4 overflow-auto h-[60vh]">
         <div className="space-y-4">
-          <Banner variant={"success"} description={successMsg || undefined} />
+          <Banner
+            variant={"info"}
+            className="mb-4"
+            title="Quick Notice"
+            description={"You can add only a max of 3 emergency contacts"}
+          />
+          <Banner
+            variant={"success"}
+            className="mb-4"
+            title={"Success"}
+            description={successMsg || undefined}
+          />
+          <Banner
+            variant={"error"}
+            className="mb-4"
+            title="Error"
+            description={error}
+          />
           <div className="grid grid-cols-1 gap-4">
             <div className="flex flex-col space-y-2">
               <label htmlFor="name" className="text-sm font-medium">
@@ -331,19 +359,19 @@ function UpdateContactsModal({
                       <div className="flex gap-2">
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size={"icon"}
                           onClick={() => handleEditContact(index)}
                           disabled={isLoading}
                         >
-                          Edit
+                          <FilePenLine className="h-4 w-5 text-green-700" />
                         </Button>
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size={"icon"}
                           onClick={() => handleRemoveContact(index)}
                           disabled={isLoading}
                         >
-                          Remove
+                          <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
                     </TableCell>
