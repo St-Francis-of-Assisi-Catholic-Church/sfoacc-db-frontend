@@ -132,52 +132,50 @@ const actionColumn: ColDef<IParishioner> = {
 const MemberColumnDefs: ColDef<IParishioner>[] = [
   {
     field: "id",
-    headerName: "ID",
+    headerName: "systemID",
     filter: "agTextColumnFilter",
-    minWidth: 80,
     pinned: "left",
+    minWidth: 80,
+    maxWidth: 120,
   },
   {
     field: "old_church_id",
-    headerName: "Old Church ID",
+    headerName: "oldChurchID",
     filter: "agTextColumnFilter",
-    minWidth: 80,
+    minWidth: 120,
+    maxWidth: 150,
   },
   {
     field: "new_church_id",
-    headerName: "New Church ID",
+    headerName: "newChurchID",
     filter: "agTextColumnFilter",
-    minWidth: 80,
+    minWidth: 120,
+    maxWidth: 150,
   },
   {
     field: "last_name",
     headerName: "Last Name",
     filter: "agTextColumnFilter",
-    minWidth: 150,
   },
   {
     field: "first_name",
     headerName: "First Name",
     filter: "agTextColumnFilter",
-    minWidth: 150,
   },
   {
     field: "maiden_name",
     headerName: "Maiden Name",
     filter: "agTextColumnFilter",
-    minWidth: 150,
   },
   {
     field: "other_names",
     headerName: "Other Names",
     filter: "agTextColumnFilter",
-    minWidth: 150,
   },
   {
     field: "date_of_birth",
     headerName: "Date of Birth",
     filter: "agDateColumnFilter",
-    minWidth: 120,
     valueFormatter: (params) => {
       if (!params.value) return "";
       return new Date(params.value).toLocaleDateString();
@@ -187,85 +185,71 @@ const MemberColumnDefs: ColDef<IParishioner>[] = [
     field: "place_of_birth",
     headerName: "Place of Birth",
     filter: "agTextColumnFilter",
-    minWidth: 150,
   },
   {
     field: "gender",
     headerName: "Gender",
     filter: "agTextColumnFilter",
-    minWidth: 100,
   },
   {
     field: "hometown",
     headerName: "Hometown",
     filter: "agTextColumnFilter",
-    minWidth: 150,
   },
   {
     field: "region",
     headerName: "Region",
     filter: "agTextColumnFilter",
-    minWidth: 150,
   },
   {
     field: "country",
     headerName: "Country",
     filter: "agTextColumnFilter",
-    minWidth: 150,
   },
   {
     field: "marital_status",
     headerName: "Marital Status",
     filter: "agTextColumnFilter",
-    minWidth: 130,
   },
   {
     field: "mobile_number",
     headerName: "Mobile Number",
     filter: "agTextColumnFilter",
-    minWidth: 130,
   },
   {
     field: "whatsapp_number",
     headerName: "WhatsApp",
     filter: "agTextColumnFilter",
-    minWidth: 130,
   },
   {
     field: "email_address",
     headerName: "Email",
     filter: "agTextColumnFilter",
-    minWidth: 200,
   },
   {
     field: "place_of_worship",
     headerName: "Place of Worship",
     filter: "agTextColumnFilter",
-    minWidth: 150,
   },
   {
     field: "current_residence",
     headerName: "Current Residence",
     filter: "agTextColumnFilter",
-    minWidth: 150,
   },
   {
     field: "membership_status",
     headerName: "Membership Status",
     filter: "agTextColumnFilter",
-    minWidth: 150,
   },
   {
     field: "verification_status",
     headerName: "Verification Status",
     filter: "agTextColumnFilter",
-    minWidth: 150,
   },
   {
     field: "created_at",
     headerName: "Created At",
     filter: "agDateColumnFilter",
-    minWidth: 160,
     valueFormatter: (params) => {
       if (!params.value) return "";
       return new Date(params.value).toLocaleString();
@@ -275,7 +259,6 @@ const MemberColumnDefs: ColDef<IParishioner>[] = [
     field: "updated_at",
     headerName: "Updated At",
     filter: "agDateColumnFilter",
-    minWidth: 160,
     valueFormatter: (params) => {
       if (!params.value) return "";
       return new Date(params.value).toLocaleString();

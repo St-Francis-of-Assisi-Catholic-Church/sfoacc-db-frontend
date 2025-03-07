@@ -215,7 +215,7 @@ function UpdateConditionsModal({
       title="Update Medical Conditions"
       buttonComponent={
         <Button variant="outline" size="icon">
-          <Pencil className="h-4 w-4" />
+          <Pencil className="h-4 w-4 text-green-600" />
         </Button>
       }
       ctaOnClicked={handleSave}
