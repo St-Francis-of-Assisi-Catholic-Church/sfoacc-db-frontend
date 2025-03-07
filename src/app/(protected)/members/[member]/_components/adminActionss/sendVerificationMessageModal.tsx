@@ -7,6 +7,8 @@ import { Mail, MessageSquare } from "lucide-react";
 import { IParishioner } from "../../../_components/member-columns";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useSession } from "next-auth/react";
+import Banner from "@/components/ui/banner";
 
 type VerificationChannel = "sms" | "email";
 
@@ -15,19 +17,13 @@ type Props = {
   parishioner: IParishioner;
 };
 
-const sendVerification = async (
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  memberId: number,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  channel: VerificationChannel
-) => {
-  // Simulated API call
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  // TODO: Replace with actual API call
-  // return fetch('/api/send-verification', {
-  //   method: 'POST',
-  //   body: JSON.stringify({ memberId, channel }),
-  // });
+type VerificationResponse = {
+  message: string;
+  data?: {
+    parishioner_id: number;
+    channel: string;
+    sent_to: string;
+  };
 };
 
 export default function SendVerificationMessageModal({
@@ -37,34 +33,75 @@ export default function SendVerificationMessageModal({
   const [channel, setChannel] = useState<VerificationChannel | null>(null);
   const [isConfirmStep, setIsConfirmStep] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const { data: session } = useSession();
+
+  const sendVerification = async (
+    parishionerId: number,
+    channel: VerificationChannel
+  ): Promise<VerificationResponse> => {
+    try {
+      const accessToken = session?.accessToken;
+      const response = await fetch(
+        `/api/v1/parishioners/verify?parishioner_id=${parishionerId}&channel=${channel}`,
+        {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || `Failed to send verification via ${channel}`
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw new Error(
+        (error as Error).message || `Failed to send verification via ${channel}`
+      );
+    }
+  };
 
   const handleSendVerification = async () => {
     if (!channel) return;
 
-    const channelInfo = getChannelInfo();
     setIsLoading(true);
+    setApiError(null);
 
-    toast.promise(sendVerification(parishioner.id, channel), {
-      loading: `Sending verification message via ${channelInfo.label}...`,
-      success: () => {
-        modalRef.current?.closeModal();
-        setChannel(null);
-        setIsConfirmStep(false);
-        setIsLoading(false);
-        return `Verification message sent successfully to ${channelInfo.value}`;
-      },
-      error: "Failed to send verification message",
-    });
+    try {
+      const result = await sendVerification(parishioner.id, channel);
+
+      toast.success(result.message || "Verification message sent successfully");
+      modalRef.current?.closeModal();
+      resetState();
+    } catch (error) {
+      setApiError((error as Error).message);
+      toast.error("Failed to send verification message");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetState = () => {
+    setChannel(null);
+    setIsConfirmStep(false);
+    setApiError(null);
   };
 
   const handleClose = () => {
     if (isConfirmStep) {
       setIsConfirmStep(false);
+      setApiError(null);
     } else {
       modalRef.current?.closeModal();
-      // Reset states when closing
-      setChannel(null);
-      setIsConfirmStep(false);
+      resetState();
     }
   };
 
@@ -98,14 +135,24 @@ export default function SendVerificationMessageModal({
       cancelTitle={isConfirmStep ? "Back" : "Cancel"}
     >
       <div className="p-6 space-y-6" onClick={(e) => e.stopPropagation()}>
+        {apiError && (
+          <Banner
+            variant="error"
+            title="Error"
+            description={apiError}
+            className="mb-4"
+          />
+        )}
+
         {!isConfirmStep ? (
           <div className="space-y-4">
             <h3 className="font-medium">Select verification channel</h3>
             <RadioGroup
               value={channel || ""}
-              onValueChange={(value: string) =>
-                setChannel(value as VerificationChannel)
-              }
+              onValueChange={(value: string) => {
+                setChannel(value as VerificationChannel);
+                setApiError(null);
+              }}
             >
               <div className="space-y-3">
                 <div className="flex items-center space-x-2">
