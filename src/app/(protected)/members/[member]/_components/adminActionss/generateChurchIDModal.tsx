@@ -9,9 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Wand2 } from "lucide-react";
-import { cn, generateNewChurchId } from "@/lib/utils";
+import { Wand2, Mail } from "lucide-react";
+import { cn } from "@/lib/utils";
 import Banner from "@/components/ui/banner";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useSession } from "next-auth/react";
 
 type Props = {
   modalRef: React.RefObject<BaseModalRef | null>;
@@ -23,22 +25,14 @@ type FormError = {
   field?: string;
 };
 
-const saveChurchIds = async (
-  memberId: number,
-  oldChurchId: string,
-  newChurchId: string
-) => {
-  try {
-    // Simulated API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    // TODO: Replace with actual API call
-    // return fetch('/api/members/church-ids', {
-    //   method: 'POST',
-    //   body: JSON.stringify({ memberId, oldChurchId, newChurchId }),
-    // });
-  } catch (error) {
-    throw new Error("Failed to save Church IDs. Please try again later.");
-  }
+type GenerateIdResponse = {
+  message: string;
+  data: {
+    parishioner_id: number;
+    old_church_id: string;
+    new_church_id: string;
+    email_sent: boolean;
+  };
 };
 
 const validateOldChurchId = (
@@ -47,7 +41,7 @@ const validateOldChurchId = (
   if (!id) {
     return { isValid: false, error: "Old Church ID is required" };
   }
-  // Check if it's a number and between 1-999
+
   const num = parseInt(id);
   if (isNaN(num) || num <= 0 || num > 999) {
     return {
@@ -68,11 +62,14 @@ export default function GenerateChurchIDModal({
   const [newChurchId, setNewChurchId] = useState<string | null>(
     parishioner.new_church_id || null
   );
-  const [isLoading, setIsLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [formError, setFormError] = useState<FormError | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [apiSuccess, setApiSuccess] = useState<string | null>(null);
+  const [sendEmail, setSendEmail] = useState(false);
+  const { data: session } = useSession();
 
-  const handleGenerateId = () => {
+  const handleGenerateId = async () => {
     const validation = validateOldChurchId(oldChurchId!);
     if (!validation.isValid) {
       setFormError({ message: validation.error || "", field: "oldChurchId" });
@@ -80,43 +77,44 @@ export default function GenerateChurchIDModal({
     }
 
     setFormError(null);
-    const generated = generateNewChurchId(
-      parishioner.first_name,
-      parishioner.last_name,
-      parishioner.date_of_birth,
-      oldChurchId!
-    );
-    setNewChurchId(generated);
-  };
-
-  const handleSave = async () => {
-    if (!oldChurchId || !newChurchId) {
-      setFormError({
-        message: "Please fill in all required fields",
-        field: !oldChurchId ? "oldChurchId" : "newChurchId",
-      });
-      return;
-    }
-
-    const validation = validateOldChurchId(oldChurchId);
-    if (!validation.isValid) {
-      setFormError({ message: validation.error || "", field: "oldChurchId" });
-      return;
-    }
-
-    setIsLoading(true);
-    setFormError(null);
     setApiError(null);
+    setApiSuccess(null);
+    setIsGenerating(true);
 
     try {
-      await saveChurchIds(parishioner.id, oldChurchId, newChurchId);
-      toast.success("Successfully saved Church IDs");
-      modalRef.current?.closeModal();
+      const accessToken = session?.accessToken;
+      const response = await fetch(
+        `/api/v1/parishioners/${parishioner.id}/generate-church-id?old_church_id=${oldChurchId}&send_email=${sendEmail}`,
+        {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to generate Church ID");
+      }
+
+      const result: GenerateIdResponse = await response.json();
+      setNewChurchId(result.data.new_church_id);
+
+      setApiSuccess(
+        `${result.message}${
+          result.data.email_sent ? " and email sent successfully" : ""
+        }`
+      );
     } catch (error) {
-      setApiError((error as Error).message);
-      toast.error("Failed to save Church IDs");
+      setApiError(
+        (error as Error).message ||
+          "Failed to generate Church ID. Please try again."
+      );
     } finally {
-      setIsLoading(false);
+      setIsGenerating(false);
     }
   };
 
@@ -126,11 +124,10 @@ export default function GenerateChurchIDModal({
     setNewChurchId(parishioner.new_church_id || "");
     setFormError(null);
     setApiError(null);
+    setApiSuccess(null);
+    setSendEmail(false);
+    setIsGenerating(false);
   };
-
-  const hasChanges =
-    oldChurchId !== parishioner.old_church_id ||
-    newChurchId !== parishioner.new_church_id;
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString("en-GB", {
@@ -145,19 +142,26 @@ export default function GenerateChurchIDModal({
       ref={modalRef}
       title="Church ID Management"
       buttonComponent={<></>}
-      ctaTitle="Save"
-      ctaOnClicked={handleSave}
-      isCtaDisabled={!oldChurchId || !newChurchId || !hasChanges || isLoading}
-      isLoading={isLoading}
+      ctaTitle=""
+      isLoading={isGenerating}
       cancelOnClicked={handleClose}
-      cancelTitle="Cancel"
+      cancelTitle="Close"
     >
       <div className="px-6 py-4 overflow-auto h-[50vh]">
         {apiError && (
           <Banner
             variant="error"
-            title="API Error"
+            title="Error"
             description={apiError}
+            className="mb-4"
+          />
+        )}
+
+        {apiSuccess && (
+          <Banner
+            variant="success"
+            title="Success"
+            description={apiSuccess}
             className="mb-4"
           />
         )}
@@ -183,8 +187,8 @@ export default function GenerateChurchIDModal({
                   <strong>Last Name</strong> are already entered.
                 </li>
                 <li>
-                  Enure the user&apos;s <strong>Date of Birth (DOB)</strong> are
-                  already entered
+                  Ensure the user&apos;s <strong>Date of Birth (DOB)</strong>{" "}
+                  are already entered
                 </li>
                 <li>
                   Enter the <strong>Old Church ID</strong> (3-digit number) if
@@ -199,8 +203,6 @@ export default function GenerateChurchIDModal({
                     of Birth(2digit) + &quot;-&quot; + Old Church ID(3 digits)
                   </code>
                 </li>
-                <li>If auto-generation fails, manually enter the Church ID.</li>
-                <li>Click save to save the IDs</li>
               </ul>
             </div>
           }
@@ -243,10 +245,9 @@ export default function GenerateChurchIDModal({
             <Label htmlFor="old-church-id">Old Church ID</Label>
             <Input
               id="old-church-id"
-              value={oldChurchId!}
+              value={oldChurchId || ""}
               onChange={(e) => {
                 setOldChurchId(e.target.value);
-                // Clear error when user starts typing
                 if (formError?.field === "oldChurchId") {
                   setFormError(null);
                 }
@@ -256,51 +257,67 @@ export default function GenerateChurchIDModal({
                 formError?.field === "oldChurchId" ? "border-red-500" : ""
               }
             />
-            {parishioner.old_church_id && hasChanges && (
-              <div className="text-sm text-muted-foreground">
-                Current: {parishioner.old_church_id}
-              </div>
-            )}
+            {parishioner.old_church_id &&
+              oldChurchId !== parishioner.old_church_id && (
+                <div className="text-sm text-muted-foreground">
+                  Current oldChurchID: {parishioner.old_church_id}
+                </div>
+              )}
           </div>
 
-          {/* New Church ID Input with Generate Button */}
-          <div className="space-y-2">
-            <Label>New Church ID</Label>
-            <div className="gap-2 grid grid-cols-3">
-              <Input
-                value={newChurchId!}
-                onChange={(e) => {
-                  setNewChurchId(e.target.value);
-                  // Clear error when user starts typing
-                  if (formError?.field === "newChurchId") {
-                    setFormError(null);
-                  }
-                }}
-                placeholder="New Church ID"
-                className={cn(
-                  "col-span-2",
-                  formError?.field === "newChurchId" ? "border-red-500" : ""
+          {/* New Church ID display */}
+          {newChurchId && (
+            <div className="space-y-2">
+              <Label>New Church ID</Label>
+              <Input value={newChurchId} readOnly className="bg-muted/50" />
+              {parishioner.new_church_id &&
+                newChurchId !== parishioner.new_church_id && (
+                  <div className="text-sm text-muted-foreground">
+                    Previous newChurchID: {parishioner.new_church_id}
+                  </div>
                 )}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleGenerateId}
-                disabled={!oldChurchId}
+            </div>
+          )}
+
+          {/* Email notification checkbox */}
+          <div className="flex items-center space-x-2 pt-4 border-t">
+            <Checkbox
+              className="text-green-600"
+              id="send-email"
+              checked={sendEmail}
+              onCheckedChange={(checked) => setSendEmail(checked as boolean)}
+            />
+            <div className="grid gap-1.5 leading-none">
+              <Label
+                htmlFor="send-email"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center"
               >
+                <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
+                Send email notification to parishioner with their Church IDs
+              </Label>
+              {sendEmail && parishioner.email_address && (
+                <p className="text-xs text-muted-foreground">
+                  An email will be sent to {parishioner.email_address}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Generate Button */}
+          <div className="space-y-2">
+            <Button
+              type="button"
+              onClick={handleGenerateId}
+              disabled={!oldChurchId || isGenerating}
+              className="w-full bg-green-600 text-white hover:bg-green-700 hover:text-white"
+            >
+              {isGenerating ? (
+                <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+              ) : (
                 <Wand2 className="h-4 w-4 mr-2" />
-                Generate
-              </Button>
-            </div>
-            {parishioner.new_church_id && hasChanges && (
-              <div className="text-sm text-muted-foreground">
-                Current: {parishioner.new_church_id}
-              </div>
-            )}
-            <div className="text-xs text-muted-foreground">
-              Format: First Name Initials + Last Name Initials + Day of Birth +
-              Month of Birth + &quot;-&quot; + Old Church ID (3 digits)
-            </div>
+              )}
+              Generate Church ID
+            </Button>
           </div>
         </div>
       </div>
