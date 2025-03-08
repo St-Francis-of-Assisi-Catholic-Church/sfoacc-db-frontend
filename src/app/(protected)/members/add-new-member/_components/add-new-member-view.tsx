@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import PersonalInfoStep, { IPersonalInfo } from "./steps/personalInfo";
-import { IContactInfo } from "./steps/contactInfo";
+import ContactInfoStep, { IContactInfo } from "./steps/contactInfo";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/store";
@@ -35,9 +35,10 @@ function AddNewMemberView() {
     country: "",
   });
 
-  const [contactInfo] = useState<IContactInfo>({
+  const [contactInfo, setContactInfo] = useState<IContactInfo>({
     mobileNumber: "",
     emaillAddress: "",
+    whatsAppNumber: "",
   });
 
   const [occupationInfo] = useState<IOccupationInfo>({
@@ -141,21 +142,21 @@ function AddNewMemberView() {
           />
         );
 
-      // case 2:
-      //   return (
-      //     <ContactInfoStep
-      //       data={contactInfo}
-      //       onSubmit={saveStateDataHandler<IContactInfo>(
-      //         2,
-      //         setContactInfo,
-      //         setCurrentStep,
-      //         setCompletedSteps,
-      //         completedSteps
-      //       )}
-      //       onBack={goBack}
-      //       onSkip={skip}
-      //     />
-      //   );
+      case 2:
+        return (
+          <ContactInfoStep
+            data={contactInfo}
+            onSubmit={saveStateDataHandler<IContactInfo>(
+              2,
+              setContactInfo,
+              setCurrentStep,
+              setCompletedSteps,
+              completedSteps
+            )}
+            onBack={goBack}
+            onSkip={skip}
+          />
+        );
 
       // case 3:
       //   return (

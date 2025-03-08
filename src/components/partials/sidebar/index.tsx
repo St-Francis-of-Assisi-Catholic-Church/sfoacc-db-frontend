@@ -20,7 +20,7 @@ export default function Sidebar() {
   return (
     <div
       className={cn(
-        "border-r fixed h-full top-0",
+        "border-r fixed h-full top-0 bg-[#152444]l bg-white",
         {
           "w-[248px]": !collapsed,
           "w-[72px]": collapsed,
@@ -28,15 +28,17 @@ export default function Sidebar() {
         ""
       )}
     >
-      <div className="flex gap-2 justify-center items-center h-[46px] border-b mt-1 pb-1">
+      <div className="flex gap-2 justify-center items-center h-[46px]  mt-5  pb-1">
         <Image src={Logo} className="h-[38px] w-[38px]" alt="logo" priority />
         <div className={cn(collapsed && "hidden")}>
-          <h1 className="font-semibold">SFOACC</h1>
-          <p className="font-light text-sm -mt-1">Church DB System v1.00</p>
+          <h1 className="font-semibold text-whitel">SFOACC</h1>
+          <p className="font-light text-sm -mt-1 text-whitel">
+            Church DB System v1.00
+          </p>
         </div>
       </div>
 
-      <ScrollArea className={cn("h-[calc(100%-48px)]", "mt-3 p-2")}>
+      <ScrollArea className={cn("h-[calc(100%-48px)]", "mt-10 p-2")}>
         <nav
           className={cn(" space-y-1", {
             " space-y-2 text-center": collapsed,

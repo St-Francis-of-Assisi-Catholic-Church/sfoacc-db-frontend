@@ -3,7 +3,7 @@ import React from "react";
 import MemberStats from "./member-stats";
 
 export const metadata = {
-  ...metaObject("Members | Registration Overview"),
+  ...metaObject("Parishioners | Registration Overview"),
 };
 
 function page() {
