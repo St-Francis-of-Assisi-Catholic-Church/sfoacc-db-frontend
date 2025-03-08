@@ -67,6 +67,7 @@ export default function GenerateChurchIDModal({
   const [apiError, setApiError] = useState<string | null>(null);
   const [apiSuccess, setApiSuccess] = useState<string | null>(null);
   const [sendEmail, setSendEmail] = useState(false);
+  const [sendSMS, setSendSMS] = useState(false);
   const { data: session } = useSession();
 
   const handleGenerateId = async () => {
@@ -84,7 +85,7 @@ export default function GenerateChurchIDModal({
     try {
       const accessToken = session?.accessToken;
       const response = await fetch(
-        `/api/v1/parishioners/${parishioner.id}/generate-church-id?old_church_id=${oldChurchId}&send_email=${sendEmail}`,
+        `/api/v1/parishioners/${parishioner.id}/generate-church-id?old_church_id=${oldChurchId}&send_email=${sendEmail}&send_sms=${sendSMS}`,
         {
           method: "POST",
           headers: {
@@ -280,7 +281,7 @@ export default function GenerateChurchIDModal({
           )}
 
           {/* Email notification checkbox */}
-          <div className="flex items-center space-x-2 pt-4 border-t">
+          <div className="flex items-center space-x-2 pt-2 border-t">
             <Checkbox
               className="text-green-600"
               id="send-email"
@@ -298,6 +299,30 @@ export default function GenerateChurchIDModal({
               {sendEmail && parishioner.email_address && (
                 <p className="text-xs text-muted-foreground">
                   An email will be sent to {parishioner.email_address}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Email notification checkbox */}
+          <div className="flex items-center space-x-2 pb-2 border-b">
+            <Checkbox
+              className="text-green-600"
+              id="send-email"
+              checked={sendSMS}
+              onCheckedChange={(checked) => setSendSMS(checked as boolean)}
+            />
+            <div className="grid gap-1.5 leading-none">
+              <Label
+                htmlFor="send-email"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center"
+              >
+                <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
+                Send SMS notification to parishioner with their Church IDs
+              </Label>
+              {sendSMS && parishioner.mobile_number && (
+                <p className="text-xs text-muted-foreground">
+                  An email will be sent to {parishioner.mobile_number}
                 </p>
               )}
             </div>

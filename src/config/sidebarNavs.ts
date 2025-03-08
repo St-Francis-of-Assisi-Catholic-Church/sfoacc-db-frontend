@@ -55,11 +55,6 @@ export const sideBarNavs: SideBarNavItem[] = [
         href: "/members/add-new-member",
         icon: UserPlus,
       },
-      // {
-      //   title: "Verify Member",
-      //   href: "/members/verify-member",
-      //   icon: UserRoundCheck,
-      // },
     ],
   },
 

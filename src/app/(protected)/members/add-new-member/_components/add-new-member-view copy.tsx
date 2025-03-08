@@ -36,6 +36,7 @@ function AddNewMemberView() {
 
   const [contactInfo, setContactInfo] = useState<IContactInfo>({
     mobileNumber: "",
+    whatsAppNumber: "",
     emaillAddress: "",
   });
 
